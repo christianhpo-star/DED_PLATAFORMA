@@ -1,0 +1,49 @@
+@media print{.table-wrap.has-overflow::before{display:none}thead{position:static!important}.toast{display:none!important}}
+
+/* Coverage of grade entry is intentionally separated from closure and lesson counts. */
+.grade-cell{min-width:165px;max-width:260px;line-height:1.4}
+.grade-cell .status{white-space:normal;text-align:left;align-items:center}
+.grade-cell .status-dot{flex-shrink:0}
+.grade-summary{display:flex;flex-wrap:wrap;gap:4px;min-width:175px;max-width:250px}
+.grade-summary .record-info{width:100%;margin-top:3px}
+.grade-followup{font-size:10px;color:#346b78;margin-top:5px;line-height:1.5}
+.grade-principle{background:var(--teal-soft);color:#176352}
+.grade-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 22px 22px;gap:16px}
+.grade-stat-grid>div{border-left:2px solid var(--line);padding-left:15px}
+.grade-stat-grid strong{display:block;font-size:29px;letter-spacing:-.7px;line-height:1.2;margin-bottom:8px}
+.grade-stat-grid span{font-size:11px;color:var(--muted);display:block;max-width:200px}
+.good-text{color:var(--teal)}
+.grades-table .component{min-width:200px;max-width:290px}
+.grades-table .grade-reason{min-width:150px;max-width:250px;font-size:11px;line-height:1.6}
+.grades-table .num{white-space:nowrap}
+.grade-rules-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin:18px 0}
+.grade-rules-grid p{font-size:11px;margin:8px 0 0!important}
+.grade-record{border:1px solid var(--line);border-radius:12px;padding:17px;margin:22px 0;scroll-margin:12px}
+.grade-record-title{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+.grade-record-title .status{white-space:normal}
+.grade-counts{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;background:#f7f9fc;border-radius:8px;padding:15px;margin:16px 0}
+.grade-counts span{display:block;font-size:10px;color:var(--muted)}
+.grade-counts strong{display:block;margin-top:5px;font-size:23px;font-variant-numeric:tabular-nums}
+.grade-evidence,.grade-edit{border-top:1px solid var(--line);padding-top:13px;margin-top:15px;font-size:11px}
+.grade-evidence summary,.grade-edit summary{font-size:12px;font-weight:650;cursor:pointer;color:var(--blue)}
+.grade-evidence p{font-size:11px;color:var(--muted);line-height:1.7;margin-top:10px}
+.grade-form-grid{grid-template-columns:1fr 1fr!important;margin:14px 0 0}
+.grade-edit .field{min-width:0}
+.grade-reason-field{margin-top:14px}
+.grade-checkbox{display:flex;align-items:flex-start;gap:8px;font-size:11px;font-weight:500;margin:12px 0 16px;color:var(--ink)}
+.grade-checkbox input{margin:3px 0 0;accent-color:var(--blue)}
+.grade-error{font-size:12px;color:var(--red);background:var(--red-soft);padding:10px;border-radius:7px;margin:12px 0}
+.grades-metadata{font-size:11px;color:var(--muted);padding:0 22px 14px}
+@media(max-width:1040px){.grade-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:24px}}
+@media(max-width:490px){.grade-stat-grid{padding:0 17px 19px;gap:20px 10px}.grade-stat-grid span{font-size:10.5px}.grade-stat-grid>div{padding-left:10px}.grade-record{padding:13px;margin-left:-3px;margin-right:-3px}.grade-counts{padding:12px;gap:9px}.grade-counts strong{font-size:20px}.grade-form-grid{grid-template-columns:1fr!important}.grade-rules-grid{grid-template-columns:1fr}.grade-edit .inline-actions{align-items:stretch;flex-direction:column}.grade-edit .btn{white-space:normal}}
+@media print{.grade-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.grade-cell,.grade-summary,.grades-table .component,.grades-table .grade-reason{min-width:0;max-width:none}.grade-cell .status{white-space:normal}.grade-rules{display:none}.grade-stat-grid strong{font-size:23px}.grade-overview{break-inside:avoid}}
+
+
+.dialog-head{position:sticky;top:0;z-index:4;background:white}
+.dialog-foot{position:sticky;bottom:0;z-index:4}
+.grade-record{scroll-margin-top:145px}
+.grade-paging .inline-actions{flex-shrink:0}
+@media(max-width:490px){.grade-record{scroll-margin-top:185px}.grade-paging .inline-actions{justify-content:space-between;width:100%}}
+@media print{.grade-paging{display:none!important}}
+
+.table-wrap{position:relative}
