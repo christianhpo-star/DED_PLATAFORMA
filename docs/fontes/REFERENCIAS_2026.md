@@ -42,6 +42,18 @@ Uso no projeto:
 
 - https://www.educacao.mg.gov.br/governo-de-minas-lanca-trilhas-de-futuro-nas-escolas-com-96-mil-vagas-em-cursos-de-alta-tecnologia/
 
+**Relação oficial de escolas e cursos — 2025**
+
+- https://www.educacao.mg.gov.br/wp-content/uploads/2025/01/Trilhas-de-Futuro-nas-Escolas-Final-1.pdf
+
+A relação oficial confirma, para a unidade usada na auditoria original, a oferta de **Fabricação Mecânica** e **Sistemas de Energia Renovável** no Trilhas de Futuro nas Escolas.
+
+**Cartilha oficial dos cursos — 2025**
+
+- https://www.educacao.mg.gov.br/wp-content/uploads/2025/01/Cartilha-de-Cursos-Trilhas-nas-escolas-1.pdf
+
+A cartilha registra carga horária mínima de **1.200 horas** tanto para Técnico em Fabricação Mecânica quanto para Técnico em Sistemas de Energia Renovável. Ela descreve objetivos e conteúdos gerais, mas **não distribui essas 1.200 horas entre componentes III/IV ou períodos letivos**. Portanto, a carga total do curso não pode ser convertida automaticamente em A/S de componentes do DED.
+
 Essas fontes documentam a integração da formação técnica ao Ensino Médio e a entrada do projeto para estudantes do 1º ano em 2025.
 
 ## 4. Continuidade de matrizes da Educação Profissional
@@ -76,13 +88,26 @@ Uso no projeto:
 - 08/12/2026 é tratado como data que exige compatibilização local;
 - a recomposição não é inventada pelo sistema e deve vir do calendário homologado da escola/SRE.
 
-## 6. Fonte necessária ainda pendente
+## 6. Busca complementar no SENAI/FIEMG
+
+A FIEMG/SENAI publica resoluções de autorização que comprovam a existência de planos de curso de **1.200 horas** para Fabricação Mecânica e Sistemas de Energia Renovável em unidades do SENAI/MG. Exemplos localizados:
+
+- Resolução SENAI CR-DR/MG nº 1325/2024 — autorização de Técnico em Fabricação Mecânica, com matriz curricular total de 1.200 horas;
+- Resolução SENAI CR-DR/MG nº 1707/2025 — autorização de Técnico em Sistemas de Energia Renovável, com matriz curricular total de 1.200 horas.
+
+Essas resoluções fortalecem a confirmação da **carga total do curso**, mas não expõem, no documento de autorização acessível, a distribuição necessária para transformar `Fabricação Mecânica III/IV` ou `Sistemas de Energia Renovável III/IV` em aulas semanais do 2º ano da coorte TFE/SENAI 2025.
+
+Também foram localizados PPCs SENAI de outras ofertas/unidades e de versões posteriores. Eles **não são transferidos automaticamente para a coorte da escola**, porque curso, versão, unidade, período e desenho curricular precisam coincidir.
+
+## 7. Fonte necessária ainda pendente
 
 Para turmas da coorte TFE/SENAI 2025 de **Fabricação Mecânica** e **Sistemas de Energia Renovável**, falta recuperar documento inequívoco que distribua a Formação Técnica Específica por componente/período, por exemplo:
 
 - matriz/grade oficial SENAI/TFE da coorte 2025;
-- plano de curso oficial aplicável;
-- documento institucional equivalente;
+- plano de curso oficial aplicável à oferta/coorte;
+- documento institucional equivalente do parceiro;
 - horário homologado que permita reconstrução documental.
+
+A busca pública confirmou a carga mínima total de 1.200 horas e a oferta dos dois cursos, mas **não encontrou uma fonte que autorize repartir essa carga em 6+6 A/S ou qualquer outra distribuição específica**.
 
 Enquanto esta fonte estiver pendente, os componentes técnicos correspondentes permanecem **sem referência documental** no motor de cálculo.
