@@ -1,0 +1,30 @@
+# Dados escolares / relatórios
+*.xlsx
+*.xls
+*.csv
+*.ods
+
+# Cópias locais preenchidas
+instances/
+local-data/
+data/private/
+exports/
+backups/
+
+# HTMLs preenchidos / snapshots locais
+*.filled.html
+*_preenchido.html
+*_preenchida.html
+*_backup.html
+
+# Parâmetros/exportações locais
+*parametros*.json
+*parameters*.json
+*backup*.json
+
+# Temporários do sistema/editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+~$*
