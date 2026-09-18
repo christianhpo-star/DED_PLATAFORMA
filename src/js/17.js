@@ -31,15 +31,15 @@ function attentionCard(titleText,value,detail,action,label,tone=''){
 function attentionCenter(){
  const a=attentionSnapshot(),weeklyValue=a.weeklyAvailable?String(a.weeklyBelowTeachers.length):'—';
  const weeklyDetail=a.weeklyAvailable?a.weeklyBelowTeachers.length+' professor(es) com ao menos um diário abaixo do mínimo · '+a.weeklyUnassessed.length+' diário(s) sem base suficiente.':'Disponível quando o 3º trimestre possui uma atualização semanal selecionada.';
- const noteAttention=a.gradeNone.length+a.gradePartial.length;
+ const gradeCritical=a.gradeNone.length+a.gradePartial.length,noteAttention=gradeCritical+a.gradeUnknown.length,referenceAttention=a.notComparable.length;
  const integrityUnique=new Set([...a.unresolvedTeacher,...a.dataConflict,...a.duplicates].map(logicalKey)).size;
  const actionable=a.open.length||noteAttention||a.gradeUnknown.length||a.missingReference.length||a.notComparable.length||integrityUnique||(a.weeklyAvailable&&(a.weeklyBelowTeachers.length||a.weeklyUnassessed.length));
  const context=attentionPeriodLabel()+' · respeita os filtros globais ativos';
  const cards=[
   attentionCard('Acompanhamento semanal',weeklyValue,weeklyDetail,'attention-weekly','Abrir 3º trimestre',a.weeklyAvailable&&a.weeklyBelowTeachers.length?'critical':''),
   attentionCard('Fechamento',String(a.open.length),a.open.length+' diário(s) continuam em aberto. Fechamento não é inferido a partir de notas ou quantidade de aulas.','attention-closure','Conferir diários',a.open.length?'critical':''),
-  attentionCard('Notas',String(noteAttention),a.gradeNone.length+' sem notas · '+a.gradePartial.length+' parcial · '+a.gradeUnknown.length+' com cobertura não verificada.','attention-grades','Conferir notas',noteAttention?'critical':a.gradeUnknown.length?'warning':''),
-  attentionCard('Referências',String(a.missingReference.length),a.missingReference.length+' componente(s) sem previsão documental/informada · '+a.notComparable.length+' diário(s) não comparáveis neste recorte.','attention-references','Ver base incompleta',a.missingReference.length?'warning':''),
+  attentionCard('Notas',String(noteAttention),a.gradeNone.length+' sem notas · '+a.gradePartial.length+' parcial · '+a.gradeUnknown.length+' com cobertura não verificada.','attention-grades','Conferir notas',gradeCritical?'critical':a.gradeUnknown.length?'warning':''),
+  attentionCard('Referências',String(referenceAttention),a.missingReference.length+' componente(s) sem previsão documental/informada · '+a.notComparable.length+' diário(s) não comparáveis neste recorte.','attention-references','Ver base incompleta',referenceAttention?'warning':''),
   attentionCard('Integridade dos dados',String(integrityUnique),a.unresolvedTeacher.length+' responsável(is) a confirmar · '+a.dataConflict.length+' conflito(s) de dados · '+a.duplicates.length+' diário(s) consolidados de linhas duplicadas.','attention-integrity','Conferir integridade',integrityUnique?'warning':'')
  ].join('');
  const emptyNote=!actionable?'<div class="attention-empty">'+icon('check')+'<div><strong>Nenhum item dessas categorias foi identificado neste recorte.</strong><span>Isso não substitui a conferência pedagógica nem comprova cumprimento de carga horária.</span></div></div>':'';
