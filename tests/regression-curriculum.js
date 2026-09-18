@@ -35,7 +35,7 @@ const html = fs.readFileSync(indexPath,'utf8');
 const scripts = [...html.matchAll(/<script src="js\/(\d{2})\.js"><\/script>/g)].map(m=>m[1]);
 assert.deepStrictEqual(scripts, Array.from({length:19},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 19 módulos JS em ordem.');
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
-assert.deepStrictEqual(styles, ['01','02','03','04','05','06','07','08'], 'index.html deve carregar os oito módulos CSS.');
+assert.deepStrictEqual(styles, ['01','02','03','04','05','06','07','08','09'], 'index.html deve carregar os nove módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
 assert(html.includes('Desenvolvido por Christian Oliveira'),'Crédito de desenvolvimento deve permanecer no rodapé.');
 const importSafety = fs.readFileSync(path.join(jsDir,'15.js'),'utf8');
