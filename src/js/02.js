@@ -8,7 +8,7 @@ function getActiveDays(){if(state.trimester==='1')return trimesterDays('1');if(s
 function calendarExpected(weekly,trimester=state.trimester){if(weekly===null||weekly===undefined)return null;if(trimester==='1')return Math.round(weekly*trimesterDays('1')/5);if(trimester==='2')return Math.round(weekly*trimesterDays('2')/5);if(trimester==='all'||trimester==='consolidated')return Math.round(weekly*trimesterDays('1')/5)+Math.round(weekly*trimesterDays('2')/5);const d=getActiveDays();return Math.round(weekly*d/5);}
 function officialDaysThrough(date){if(!date)return 0;return [...effectiveSchoolDays()].filter(d=>d>='2026-09-10'&&d<='2026-12-18'&&d<=date).length;}
 function officialDaysBetween(a,b){if(!a||!b||b<a)return 0;return [...effectiveSchoolDays()].filter(d=>d>='2026-09-10'&&d<='2026-12-18'&&d>a&&d<=b).length;}
-function recalcSnapshotCalendar(){dataStore.weeklySnapshots.sort((a,b)=>a.date.localeCompare(b.date));for(let i=0;i<dataStore.weeklySnapshots.length;i++){const s=dataStore.weeklySnapshots[i],prev=dataStore.weeklySnapshots[i-1];s.daysToDate=officialDaysThrough(s.date);s.intervalDays=prev?officialDaysBetween(prev.date,s.date):0;}}
+function recalcSnapshotCalendar(){dataStore.weeklySnapshots.sort((a,b)=>a.date.localeCompare(b.date));for(let i=0;i<dataStore.weeklySnapshots.length;i++){const s=dataStore.weeklySnapshots[i],prev=dataStore.weeklySnapshots[i-1];s.daysToDate=officialDaysThrough(s.date);s.intervalDays=prev?officialDaysBetween(prev.date,s.date):s.daysToDate;}}
 function getActiveRaw(){
  if(state.trimester==='1') return DATA.raw_t1 || DATA.raw;
  if(state.trimester==='all'||state.trimester==='consolidated') return DATA.raw_consolidated || DATA.raw;
