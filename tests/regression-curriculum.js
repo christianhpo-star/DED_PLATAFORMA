@@ -50,6 +50,12 @@ assert.strictEqual(matrix.classes['3INF1'].school_weekly_total,46,'3INF1 deve pr
 assert.strictEqual(matrix.classes['3QUI1'].school_weekly_total,46,'3QUI1 deve preservar soma por coluna de 46 A/S.');
 assert(js.includes('CLASS_MATRIX_BY_REPORT'),'Motor deve aceitar matriz semanal específica por turma.');
 assert(js.includes('monitoringExcluded'),'Motor deve excluir componentes externos explicitamente marcados.');
+assert(js.includes("s.intervalDays=prev?officialDaysBetween(prev.date,s.date):s.daysToDate"),'Primeiro snapshot do T3 deve ser avaliado desde o início do trimestre.');
+assert(js.includes("previous=prev?numeric(before?.total):0"),'Primeira atualização semanal deve usar base zero.');
+assert(js.includes("Math.ceil(expected*.8-1e-9)"),'Mínimo semanal deve ser 80% do previsto, arredondado para cima.');
+assert(js.includes("below=assessed.filter(r=>!r.met80)"),'Regra de atenção deve ser aplicada por diário, sem compensação entre turmas.');
+assert(js.includes("function weeklyTeacherPrintSheet"),'Impressão individual por professor deve permanecer disponível.');
+assert(js.includes("function beginWeeklyPrint"),'Impressão em lote de professores selecionados deve permanecer disponível.');
 const sourceMatch = html.match(/<script id="source-data" type="application\/json">([\s\S]*?)<\/script>/);
 assert(sourceMatch, 'source-data ausente.');
 const data = JSON.parse(sourceMatch[1]);
@@ -60,6 +66,7 @@ assert.strictEqual(data.school,'','Template público não pode vir identificado 
 
 const sensitive = [/H[IÍ]LTON ROCHA/i,/MARIA LUIZA MIRANDA BASTOS/i,/000353/,/CRISTIANO MACHADO/i,/ANA CECILIA SANTOS GOMES/i,/VAMBERTO/i];
 const publicSource = html + '\n' + js + '\n' + fs.readdirSync(path.join(root,'src','css')).sort().map(f=>fs.readFileSync(path.join(root,'src','css',f),'utf8')).join('\n');
+assert(publicSource.includes('body.weekly-printing .weekly-print-sheet'),'Impressão semanal deve isolar folhas individuais por professor.');
 for (const rx of sensitive) assert(!rx.test(publicSource), `Dado identificável encontrado no template: ${rx}`);
 
 const base = new Set(data.schoolDays);
