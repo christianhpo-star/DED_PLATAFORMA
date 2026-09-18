@@ -117,7 +117,7 @@ function commitImport(candidate=safeImportStage){
  if(!candidate)return;
  validateImportCandidate(candidate);
  setImportStep(5,'Aplicando atualização','Criando ponto de restauração e gravando a base somente após sua confirmação.');
- const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);
+ const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);let previousRestore=null;try{previousRestore=localStorage.getItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
  createLocalRestorePoint(`Antes de ${importTargetLabel(candidate)} · ${candidate.fileName}`);
  DATA.refs=safeClone(candidate.refs);
  if(candidate.target==='1')dataStore.t1=safeClone(candidate.rows);
@@ -129,7 +129,7 @@ function commitImport(candidate=safeImportStage){
  hydrateDataStore(dataStore,DATA.refs);
  if(!saveDataStore()){
   hydrateDataStore(beforeStore,beforeRefs);
-  try{localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
+  try{if(previousRestore===null)localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);else localStorage.setItem(SAFE_IMPORT_RESTORE_KEY,previousRestore);}catch(e){}
   throw new Error('A atualização não pôde ser salva neste navegador. A base anterior foi restaurada.');
  }
  if(candidate.target==='weekly'){state.trimester='3';state.weeklySelected.clear();}
