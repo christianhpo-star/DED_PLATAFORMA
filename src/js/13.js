@@ -29,7 +29,9 @@ let pendingImport=null;
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-action]');if(!el)return;const a=el.dataset.action;
  if(a==='nav'){if(el.dataset.page==='teachers'){state.mode='all';state.teacherGradeMode='all';}switchPage(el.dataset.page);}
- else if(a==='trimester'){state.trimester=el.dataset.trimester;RAW=getActiveRaw();if(document.getElementById('trimester-filter'))document.getElementById('trimester-filter').value=state.trimester;syncFilterOptions();render();}
+ else if(a==='section-jump'){const target=document.getElementById(el.dataset.target);if(target){target.setAttribute('tabindex','-1');target.scrollIntoView({behavior:'smooth',block:'start'});target.focus({preventScroll:true});}}
+ else if(a==='compare-class'){state.comparisonA=state.selectedClass||state.classId||'';state.comparisonB='';switchPage('compare');}
+ else if(a==='trimester'){state.trimester=el.dataset.trimester;RAW=getActiveRaw();if(document.getElementById('trimester-filter'))document.getElementById('trimester-filter').value=state.trimester;syncFilterOptions();if(state.trimester==='all')switchPage('consolidated');else if(state.page==='consolidated')switchPage('overview');else render();}
  else if(a==='clear'){state.stage='';state.matrixGroup='';state.classId='';state.teacher='';state.query='';state.mode='all';state.gradeMode='all';state.gradePage=0;state.teacherGradeMode='all';state.expanded.clear();syncFilterOptions();render();}
  else if(a==='print')window.print();
  else if(a==='print-all-teachers')printAllTeachers();
