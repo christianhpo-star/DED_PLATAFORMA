@@ -21,4 +21,4 @@ function saveGradeRecord(id){
  if(saved)toast('Confer\u00eancia de notas salva. Situa\u00e7\u00f5es recalculadas sem alterar os dados originais.');
 }
 
-function modelRows(){return getActiveRaw().map(r=>{const rr={...r,professor:responsibleTeacher(r)},plan=planned(rr),actual=numeric(rr.total);return {...rr,actual,plan,grade:gradeFor(rr),comparable:rr.unit==='aulas'&&actual!==null&&plan.value!==null,balance:rr.unit==='aulas'&&actual!==null&&plan.value!==null?actual-plan.value:null};});}
+function modelRows(){return getActiveRaw().filter(r=>!r.monitoringExcluded).map(r=>{const rr={...r,professor:responsibleTeacher(r)},plan=planned(rr),actual=numeric(rr.total);return {...rr,actual,plan,grade:gradeFor(rr),comparable:rr.unit==='aulas'&&actual!==null&&plan.value!==null,balance:rr.unit==='aulas'&&actual!==null&&plan.value!==null?actual-plan.value:null};});}
