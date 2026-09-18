@@ -37,6 +37,19 @@ assert.deepStrictEqual(scripts, Array.from({length:14},(_,i)=>String(i+1).padSta
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
 assert.deepStrictEqual(styles, ['01','02','03','04'], 'index.html deve carregar os quatro módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
+const matrixPath = path.join(root,'data','matrizes','emti_2026_anonimizada.json');
+assert(fs.existsSync(matrixPath),'Matriz EMTI anonimizada deve permanecer versionada.');
+const matrix = JSON.parse(fs.readFileSync(matrixPath,'utf8'));
+assert.strictEqual(matrix.schema_version,2,'Schema da matriz semanal deve permanecer na versão 2.');
+assert.strictEqual(Object.keys(matrix.classes).length,15,'Matriz EMTI deve conter 15 perfis de turma.');
+assert(!JSON.stringify(matrix).match(/professor|docente/i),'JSON da matriz não pode armazenar nomes/campos de professor.');
+for(const item of Object.values(matrix.classes)){assert(item.report_class&&item.components,'Cada turma deve mapear report_class e components.');}
+assert.strictEqual(matrix.classes['2º TEC ER1'].school_weekly_total,33,'Parte escolar do 2º SENAI deve permanecer em 33 A/S.');
+assert.strictEqual(matrix.classes['2º TEC ER1'].external_not_monitored.weekly_total,12,'Bloco técnico SENAI externo deve permanecer explicitamente fora do monitoramento.');
+assert.strictEqual(matrix.classes['3INF1'].school_weekly_total,46,'3INF1 deve preservar soma por coluna de 46 A/S.');
+assert.strictEqual(matrix.classes['3QUI1'].school_weekly_total,46,'3QUI1 deve preservar soma por coluna de 46 A/S.');
+assert(js.includes('CLASS_MATRIX_BY_REPORT'),'Motor deve aceitar matriz semanal específica por turma.');
+assert(js.includes('monitoringExcluded'),'Motor deve excluir componentes externos explicitamente marcados.');
 const sourceMatch = html.match(/<script id="source-data" type="application\/json">([\s\S]*?)<\/script>/);
 assert(sourceMatch, 'source-data ausente.');
 const data = JSON.parse(sourceMatch[1]);
