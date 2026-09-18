@@ -2,7 +2,6 @@
 function render(){
  const base=baseRows(),s=stats(base);document.getElementById('filter-summary').innerHTML=`<strong>${base.length}</strong> registros &middot; <strong>${s.teachers.length}</strong> docentes &middot; <strong>${s.classes.length}</strong> turmas no filtro geral`;
  document.getElementById('top-period').innerHTML=icon('calendar')+(state.page==='weekly'?'3º trimestre · semanal':state.page==='imports'?'Bases de 2026':state.trimester==='1'?'1º trimestre de 2026':state.trimester==='3'?'3º trimestre de 2026':state.trimester==='all'?'1º + 2º trimestres':'2º trimestre de 2026');
- document.getElementById('nav-open').textContent=modelRows().filter(r=>r.status!=='FECHADO').length+currentTeacherConflicts().filter(teacherConflictUnresolved).length;
  const renderers={overview,teachers:teachersPage,classes:classesPage,compare:comparePage,pending:pendingPage,grades:gradesPage,consolidated:consolidatedPage,weekly:weeklyPage,imports:importsPage,settings:settingsPage};
  document.getElementById('view').innerHTML=renderers[state.page]();
  document.querySelectorAll('.table-wrap').forEach(w=>{const over=w.scrollWidth>w.clientWidth+2;w.classList.toggle('has-overflow',over);if(over){w.setAttribute('tabindex','0');w.setAttribute('role','region');w.setAttribute('aria-label','Tabela com rolagem horizontal');}});

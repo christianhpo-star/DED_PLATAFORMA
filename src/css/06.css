@@ -1,0 +1,26 @@
+/* Central de Atenção da EEB */
+.attention-center{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.attention-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.attention-head .eyebrow{color:var(--blue);margin-bottom:5px}
+.attention-head h2{font-size:20px}
+.attention-head p{font-size:11px;color:var(--muted);line-height:1.6;margin-top:5px}
+.attention-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.attention-card{display:flex;flex-direction:column;justify-content:space-between;gap:12px;min-height:165px;border:1px solid var(--line);border-top:3px solid #aeb8c8;border-radius:11px;padding:14px;background:#fbfcfe}
+.attention-card.critical{border-top-color:var(--red);background:#fffafa}
+.attention-card.warning{border-top-color:#c38b25;background:#fffdf8}
+.attention-card-main{display:flex;flex-direction:column;gap:6px}
+.attention-label{font-size:10px;font-weight:750;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.attention-value{font-size:30px;line-height:1.1;font-weight:750;font-variant-numeric:tabular-nums;color:var(--ink)}
+.attention-card p{font-size:10.5px;line-height:1.55;color:var(--muted)}
+.attention-action{align-self:flex-start;font-size:10.5px}
+.attention-empty{display:flex;align-items:flex-start;gap:10px;border:1px solid #cce7df;background:var(--teal-soft);color:#176352;border-radius:9px;padding:12px 14px;margin-top:14px;font-size:11px}
+.attention-empty svg{width:16px;height:16px;margin-top:1px}
+.attention-empty strong,.attention-empty span{display:block}
+.attention-empty span{margin-top:2px;color:#41796f}
+.attention-method{display:flex;align-items:flex-start;gap:7px;color:var(--muted);font-size:10px;line-height:1.55;margin-top:13px}
+.attention-method svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+#pending-integrity{scroll-margin-top:20px}
+@media(max-width:1250px){.attention-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:800px){.attention-center{padding:16px}.attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.attention-head{flex-wrap:wrap}}
+@media(max-width:490px){.attention-grid{grid-template-columns:1fr}.attention-card{min-height:0}.attention-value{font-size:27px}}
+@media print{.attention-action{display:none!important}.attention-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.attention-card{min-height:0;break-inside:avoid}}
