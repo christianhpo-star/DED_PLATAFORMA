@@ -23,7 +23,7 @@ async function replaceReport(file,period){
 async function addWeeklyReport(file){
  const date=document.getElementById('weekly-date')?.value;if(!date)throw new Error('Informe a data de referência da atualização.');if(date<'2026-09-10'||date>'2026-12-18')throw new Error('A data deve estar dentro do 3º trimestre: 10/09 a 18/12/2026.');
  const rows=await parseTeacherReport(file,'w'),snapshot={date,intervalDays:0,daysToDate:officialDaysThrough(date),fileName:file.name,importedAt:Date.now(),rows};
- const same=dataStore.weeklySnapshots.findIndex(s=>s.date===date);if(same>=0)dataStore.weeklySnapshots[same]=snapshot;else dataStore.weeklySnapshots.push(snapshot);recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.at(-1).rows;saveDataStore();state.trimester='3';RAW=getActiveRaw();syncFilterOptions();render();toast(dataStore.weeklySnapshots.length===1?'Linha de base semanal criada com o calendário oficial. Insira a próxima atualização para comparar.':`Atualização semanal incluída com ${rows.length} registros lógicos.`);
+ const same=dataStore.weeklySnapshots.findIndex(s=>s.date===date);if(same>=0)dataStore.weeklySnapshots[same]=snapshot;else dataStore.weeklySnapshots.push(snapshot);recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.at(-1).rows;saveDataStore();state.trimester='3';state.weeklySelected.clear();RAW=getActiveRaw();syncFilterOptions();render();toast(dataStore.weeklySnapshots.length===1?`Primeira atualização avaliada desde 10/09/2026 com ${dataStore.weeklySnapshots[0].intervalDays} dia(s) letivo(s).`:`Atualização semanal incluída com ${rows.length} registros lógicos.`);
 }
 let pendingImport=null;
 document.addEventListener('click',e=>{
@@ -33,6 +33,11 @@ document.addEventListener('click',e=>{
  else if(a==='clear'){state.stage='';state.matrixGroup='';state.classId='';state.teacher='';state.query='';state.mode='all';state.gradeMode='all';state.gradePage=0;state.teacherGradeMode='all';state.expanded.clear();syncFilterOptions();render();}
  else if(a==='print')window.print();
  else if(a==='print-all-teachers')printAllTeachers();
+ else if(a==='weekly-print-summary')beginWeeklyPrint('summary');
+ else if(a==='weekly-print-teacher')beginWeeklyPrint('teachers',[el.dataset.teacher]);
+ else if(a==='weekly-print-selected')beginWeeklyPrint('teachers',[...state.weeklySelected]);
+ else if(a==='weekly-clear-selection'){state.weeklySelected.clear();render();}
+ else if(a==='weekly-select-all'){const names=weeklyTeacherGroups().filter(g=>g.below.length).map(g=>g.name);state.weeklySelected=new Set(names);render();}
  else if(a==='export')exportCSV();
  else if(a==='teacher'){state.teacher=el.dataset.teacher;state.mode='all';syncFilterOptions();state.expanded.add(state.teacher);switchPage('teachers');}
  else if(a==='expand'){const n=el.dataset.teacher;if(state.expanded.has(n))state.expanded.delete(n);else state.expanded.add(n);const y=window.scrollY;render();window.scrollTo({top:y,behavior:'instant'});const target=[...document.querySelectorAll('[data-action="expand"]')].find(x=>x.dataset.teacher===n);target?.focus({preventScroll:true});}

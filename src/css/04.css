@@ -47,3 +47,47 @@
 @media print{.grade-paging{display:none!important}}
 
 .table-wrap{position:relative}
+
+
+/* Weekly T3 monitoring: 80% per diary, with private teacher print sheets. */
+.weekly-name-list{display:flex;flex-wrap:wrap;gap:8px}
+.weekly-name-list>span{display:inline-flex;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#f8fafd;font-size:11px;font-weight:650}
+.weekly-batch-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.weekly-batch-actions .grade-checkbox{margin:0}
+.weekly-teacher-alert{border-top:1px solid var(--line);padding:18px 22px}
+.weekly-teacher-alert:first-of-type{border-top:0}
+.weekly-teacher-alert-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.weekly-teacher-alert-head .grade-checkbox{margin:0;font-size:13px}
+.weekly-alert-table .component{min-width:210px}
+.weekly-print-area{display:none}
+.weekly-print-head{display:flex;justify-content:space-between;gap:24px;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:22px}
+.weekly-print-head>div{display:flex;flex-direction:column;gap:4px}
+.weekly-print-head>div:last-child{text-align:right}
+.weekly-print-head span{font-size:10px;color:var(--muted)}
+.weekly-print-rule{font-size:11px;line-height:1.6;margin:0 0 18px}
+.weekly-print-note{font-size:9px;line-height:1.5;color:var(--muted);margin-top:18px}
+.weekly-signatures{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:48px}
+.weekly-signatures span{border-top:1px solid var(--ink);padding-top:7px;text-align:center;font-size:10px}
+.weekly-summary-teacher{margin:18px 0 24px;break-inside:avoid}
+.weekly-summary-teacher h3{margin-bottom:8px}
+@media(max-width:650px){.weekly-teacher-alert{padding:15px}.weekly-batch-actions,.weekly-teacher-alert-head{align-items:stretch;flex-direction:column}.weekly-teacher-alert-head .inline-actions{width:100%}.weekly-teacher-alert-head .btn{white-space:normal}}
+@media print{
+ body.weekly-printing .sidebar,
+ body.weekly-printing .topbar,
+ body.weekly-printing .page-heading,
+ body.weekly-printing .filter-panel,
+ body.weekly-printing .footer,
+ body.weekly-printing #view>:not(.weekly-print-area){display:none!important}
+ body.weekly-printing .weekly-print-area{display:block!important}
+ body.weekly-printing .app{margin:0!important}
+ body.weekly-printing .content{padding:0!important}
+ body.weekly-printing .weekly-print-sheet{display:block;break-after:page;page-break-after:always}
+ body.weekly-printing .weekly-print-sheet:last-child{break-after:auto;page-break-after:auto}
+ body.weekly-printing .weekly-print-sheet h1{font-size:22px;margin:0 0 12px}
+ body.weekly-printing .weekly-print-sheet h2{font-size:14px;margin:22px 0 10px}
+ body.weekly-printing .weekly-print-sheet .table-wrap{overflow:visible!important}
+ body.weekly-printing .weekly-print-sheet .data-table{font-size:9.5px}
+ body.weekly-printing .weekly-print-sheet .data-table th,
+ body.weekly-printing .weekly-print-sheet .data-table td{padding:7px!important}
+ body.weekly-printing .weekly-name-list>span{font-size:9px;padding:5px 8px}
+}
