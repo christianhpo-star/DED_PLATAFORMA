@@ -2,7 +2,14 @@
 let loadWarning='';let cfg=defaultConfig();
 try{const embedded=JSON.parse(document.getElementById('embedded-config').textContent);if(embedded&&embedded.version)cfg=validateConfig(embedded);}catch(e){loadWarning='A configura\u00e7\u00e3o incorporada n\u00e3o p\u00f4de ser lida. Foram usadas as refer\u00eancias originais.';}
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
-const state={page:'overview',trimester:'2',stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set()};
+function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function initialTrimester(){
+ if(dataStore.weeklySnapshots.length)return '3';
+ const t2=dataStore.t2===null?(DATA.raw||[]):dataStore.t2;if(t2.length)return '2';
+ const t1=dataStore.t1===null?(DATA.raw_t1||[]):dataStore.t1;if(t1.length)return '1';
+ const today=localIsoDate();if(today>='2026-09-10')return '3';if(today>='2026-05-21')return '2';return '1';
+}
+const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set()};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
 function schoolProfile(){return cfg.school||{name:'',city:'',sre:'',code:'',responsible:''};}
 function schoolName(){return schoolProfile().name||'Escola não configurada';}
