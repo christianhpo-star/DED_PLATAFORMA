@@ -58,7 +58,10 @@ for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',e=
 window.addEventListener('beforeprint',()=>{if(state.page==='grades'){state.printAllGrades=true;render();}});
 window.addEventListener('afterprint',()=>{if(state.printAllGrades){state.printAllGrades=false;render();}if(document.body.classList.contains('weekly-printing')){document.body.classList.remove('weekly-printing');state.weeklyPrintMode='';state.weeklyPrintTeachers.clear();render();}});
 window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(pageMeta[p]&&p!==state.page)switchPage(p);});
-document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=icon(e.dataset.icon));
-updateSchoolUI();syncFilterOptions();switchPage(location.hash.slice(1)||'overview',false);if(loadWarning)toast(loadWarning);
+function initializeDedApp(){
+ document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=icon(e.dataset.icon));
+ updateSchoolUI();syncFilterOptions();switchPage(location.hash.slice(1)||'overview',false);if(loadWarning)toast(loadWarning);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeDedApp,{once:true});else initializeDedApp();
 // Read-only diagnostic API for reproducible checks; no external connections.
 window.DED=Object.freeze({getData:()=>JSON.parse(JSON.stringify(DATA)),getConfig:()=>JSON.parse(JSON.stringify(cfg)),getRows:()=>modelRows(),getStats:()=>stats(modelRows()),getState:()=>({...state,expanded:[...state.expanded]}),validateConfig,classifyGrades,getGradeStats:()=>gradeStats(modelRows())});
