@@ -111,3 +111,23 @@ Para turmas da coorte TFE/SENAI 2025 de **Fabricação Mecânica** e **Sistemas 
 A busca pública confirmou a carga mínima total de 1.200 horas e a oferta dos dois cursos, mas **não encontrou uma fonte que autorize repartir essa carga em 6+6 A/S ou qualquer outra distribuição específica**.
 
 Enquanto esta fonte estiver pendente, os componentes técnicos correspondentes permanecem **sem referência documental** no motor de cálculo.
+
+
+## 8. Oferta intercultural/bilíngue e ampliação do motor de matrizes
+
+A oferta do **Minas Bilíngue** é tratada como uma dimensão curricular independente da condição `REG/INT` e do curso técnico. Uma turma pode, portanto, ser simultaneamente integral, técnica e bilíngue.
+
+Fontes institucionais consultadas:
+
+- SEE/MG — Minas Bilíngue e implantação a partir de 2026: https://www.educacao.mg.gov.br/escolas-estaduais-ja-podem-demonstrar-interesse-em-aderir-ao-minas-bilingue/
+- Edital/retificação SEE/MG que explicita componentes como Estudos Interculturais, Língua Estrangeira, Arte/Matemática/Geografia Aplicada em Língua Estrangeira: https://www.educacao.mg.gov.br/wp-content/uploads/2025/12/RETIFICACAO-DO-EDITAL-PS-SEE-No-10-2025-Public.-06-12-25.pdf
+- Resolução SEE nº 5.212/2025 e anexos consolidados: https://www.educacao.mg.gov.br/wp-content/uploads/2025/11/Anexos-1-a-91-25nov2025.pdf
+
+Anexos técnicos relevantes ao classificador genérico incluem, entre outros:
+
+- Anexo XXXVII — Técnico em Química, eixo Produção Industrial;
+- Anexo LXXXIII — Técnico em Automação Industrial;
+- Anexo LXXXV — Técnico em Fabricação Mecânica;
+- Anexo XC — Técnico em Sistemas de Energia Renovável.
+
+**Regra operacional:** reconhecer um componente como bilíngue não autoriza atribuir automaticamente sua A/S. A carga só entra na base comparável quando estiver documentada na matriz bilíngue aplicável, em grade oficial ou em horário homologado. O mesmo vale para componentes técnicos de coortes anteriores cuja nomenclatura não coincide com a matriz de entrada 2026.
