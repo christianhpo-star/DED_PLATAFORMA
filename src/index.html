@@ -8,7 +8,7 @@
 <meta content="Acompanhamento local e reutilizável do DED, com atualização por planilhas e monitoramento semanal." name="description"/>
 <title>DED em foco | Template reutilizável</title>
 
-<link href="css/01.css" rel="stylesheet"/><link href="css/02.css" rel="stylesheet"/><link href="css/03.css" rel="stylesheet"/><link href="css/04.css" rel="stylesheet"/><link href="css/05.css" rel="stylesheet"/><link href="css/06.css" rel="stylesheet"/></head>
+<link href="css/01.css" rel="stylesheet"/><link href="css/02.css" rel="stylesheet"/><link href="css/03.css" rel="stylesheet"/><link href="css/04.css" rel="stylesheet"/><link href="css/05.css" rel="stylesheet"/><link href="css/06.css" rel="stylesheet"/><link href="css/07.css" rel="stylesheet"/></head>
 <body>
 <a class="skip-link" href="#main">Ir para o conteúdo</a>
 <aside aria-label="Navegação principal" class="sidebar">
@@ -21,13 +21,14 @@
 <button class="nav-button" data-action="nav" data-page="imports" data-nav-area="data" type="button"><span data-icon="upload"></span>Dados</button>
 <button class="nav-button" data-action="nav" data-page="settings" data-nav-area="settings" type="button"><span data-icon="sliders"></span>Configurações</button>
 </nav>
-<div class="sidebar-foot"><strong id="school-sidebar-name">Escola não configurada</strong><p id="school-sidebar-meta">Cadastre a escola em Calendário / Matriz</p><p><span class="local-dot"></span>Arquivo local · sem sincronização</p></div>
+<div class="sidebar-foot"><strong id="school-sidebar-name">Escola não configurada</strong><p id="school-sidebar-meta">Cadastre a escola em Calendário / Matriz</p><p><span class="local-dot"></span><span id="sidebar-data-freshness">Arquivo local · sem sincronização</span></p></div>
 </aside>
 <div class="app">
 <header class="topbar"><div class="breadcrumb"><span>Escola / DED</span><span class="crumb-divider">/</span><strong id="breadcrumb-page">Visão geral</strong></div><div class="top-actions"><span class="period" id="top-period"><span data-icon="calendar"></span>2º trimestre de 2026</span><button class="btn" data-action="print" title="Imprimir a tela atual" type="button"><span data-icon="print"></span><span class="print-label">Imprimir</span></button><button class="btn btn-primary" data-action="export" title="Exportar os registros desta tela em CSV" type="button"><span data-icon="download"></span>Exportar dados</button></div></header>
 <main class="content" id="main" tabindex="-1">
 <div class="page-heading"><div><div class="eyebrow" id="school-heading">ESCOLA NÃO CONFIGURADA · ANO LETIVO 2026</div><h1 id="page-title">Acompanhamento do DED</h1><p class="sub" id="page-description"></p></div><div class="heading-aside"><strong>1º, 2º e 3º trimestres</strong><span id="heading-scope">Base local atualizável por planilha</span></div></div>
 <nav aria-label="Navegação da área" class="section-navigation" id="section-navigation" hidden></nav>
+<section aria-live="polite" class="data-context" id="data-context"></section>
 <section aria-label="Filtros do painel" class="filter-panel" id="filter-panel">
 <div class="filters">
 <div class="field"><label for="trimester-filter">Período / Trimestre</label><select id="trimester-filter"><option value="3">3º Trimestre (Atualizações)</option><option value="2">2º Trimestre</option><option value="1">1º Trimestre</option><option value="all">Consolidado (1º + 2º Tri)</option></select></div>
@@ -53,5 +54,5 @@
 <script id="embedded-config" type="application/json">{"version":6,"datasetId":"ded-plataforma-template-2026","days":68,"school":{"name":"","city":"","sre":"","code":"","responsible":""},"weekly":{},"expected":{},"teacherOverrides":{},"updatedAt":0,"gradeOverrides":{},"calendarAdded":[],"calendarRemoved":[]}</script>
 <script id="embedded-data-store" type="application/json">{"t1":null,"t2":null,"weeklySnapshots":[]}</script>
 
-<script src="js/01.js"></script><script src="js/02.js"></script><script src="js/03.js"></script><script src="js/04.js"></script><script src="js/05.js"></script><script src="js/06.js"></script><script src="js/07.js"></script><script src="js/08.js"></script><script src="js/09.js"></script><script src="js/10.js"></script><script src="js/11.js"></script><script src="js/12.js"></script><script src="js/13.js"></script><script src="js/14.js"></script><script src="js/15.js"></script><script src="js/16.js"></script><script src="js/17.js"></script></body>
+<script src="js/01.js"></script><script src="js/02.js"></script><script src="js/03.js"></script><script src="js/04.js"></script><script src="js/05.js"></script><script src="js/06.js"></script><script src="js/07.js"></script><script src="js/08.js"></script><script src="js/09.js"></script><script src="js/10.js"></script><script src="js/11.js"></script><script src="js/12.js"></script><script src="js/13.js"></script><script src="js/14.js"></script><script src="js/15.js"></script><script src="js/16.js"></script><script src="js/17.js"></script><script src="js/18.js"></script></body>
 </html>
