@@ -66,3 +66,12 @@ Para cada turma/componente, usar nesta ordem:
 ## Regra de segurança
 
 Nunca completar lacunas de Formação Técnica Específica por analogia com outro curso, outra coorte, outra escola ou com o próprio volume registrado no DED.
+
+
+## Oferta intercultural/bilíngue
+
+O perfil bilíngue não substitui a modalidade nem o curso técnico. O motor deve registrar dimensões independentes: ano/série, turno/modalidade, curso técnico e presença de componentes bilíngues.
+
+Assim, uma turma pode ser classificada como **integral + técnica + bilíngue** sem ser forçada a uma categoria única. Componentes como Estudos Interculturais, Língua Estrangeira e componentes aplicados em língua estrangeira identificam o perfil, mas permanecem sem A/S automática quando a carga específica da oferta não estiver documentalmente disponível.
+
+Nomes de oferta com hífen interno também precisam ser preservados pelo importador. Somente o sufixo de endereço/localização deve ser removido quando reconhecido como tal; o hífen que integra o nome do curso não pode determinar o corte do nome da turma.
