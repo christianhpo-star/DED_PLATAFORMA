@@ -2,7 +2,7 @@
   "schema_version": 2,
   "year": 2026,
   "source_type": "school_curriculum_matrix",
-  "privacy": "Professor names removed; school name/code omitted. Only curricular class labels and weekly loads are retained.",
+  "privacy": "Personal names removed; school name/code omitted. Only curricular class labels and weekly loads are retained.",
   "methodology": {
     "cell_rule": "The leading number in each class-column cell is the weekly lesson load for that component/class. Text after the number is teacher allocation and is intentionally discarded.",
     "expected_rule": "expected = weekly_load * effective_school_days / 5, rounded by instructional period; local holidays/repositions adjust effective_school_days.",
