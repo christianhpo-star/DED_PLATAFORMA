@@ -45,4 +45,21 @@ function attentionCenter(){
  const emptyNote=!actionable?'<div class="attention-empty">'+icon('check')+'<div><strong>Nenhum item dessas categorias foi identificado neste recorte.</strong><span>Isso não substitui a conferência pedagógica nem comprova cumprimento de carga horária.</span></div></div>':'';
  return '<section class="attention-center" aria-labelledby="attention-title"><div class="attention-head"><div><div class="eyebrow">CENTRAL DE ATENÇÃO</div><h2 id="attention-title">Onde preciso atuar agora?</h2><p>'+esc(context)+'. As categorias são independentes e não devem ser somadas entre si.</p></div>'+badge('Fila de trabalho','info')+'</div><div class="attention-grid">'+cards+'</div>'+emptyNote+'<div class="attention-method">'+icon('info')+' Diferenças entre previsto e registrado são sinais para conferência; não comprovam, isoladamente, aula não ministrada ou responsabilidade docente.</div></section>';
 }
-window.DED_ATTENTION=Object.freeze({attentionSnapshot,attentionCenter});
+function attentionIntegrityRows(){
+ const a=attentionSnapshot(),map=new Map();
+ for(const r of [...a.unresolvedTeacher,...a.dataConflict,...a.duplicates])map.set(logicalKey(r),r);
+ return [...map.values()];
+}
+function attentionIntegritySection(){
+ const rows=attentionIntegrityRows();
+ const issueText=r=>{
+  const parts=[];
+  if(teacherConflictUnresolved(r))parts.push('responsável atual a confirmar');
+  if(r.dataConflict)parts.push('duplicidade com dados divergentes');
+  if((r.duplicateSourceRows||1)>1&&!r.dataConflict)parts.push('linhas duplicadas consolidadas');
+  return parts.join(' · ')||'conferência de integridade';
+ };
+ const body=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr><th>Turma / componente</th><th>Professor</th><th>Motivo da conferência</th><th>Ação</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><div class="component"><strong>'+esc(r.shortClass)+'</strong><small>'+esc(title(r.componente))+'</small></div></td><td>'+esc(title(r.professor))+'</td><td>'+badge(issueText(r),'warn')+'</td><td>'+btn(teacherConflictUnresolved(r)?'Definir responsável':'Ver registro',teacherConflictUnresolved(r)?'nav':'record',teacherConflictUnresolved(r)?'data-page="settings"':'data-id="'+esc(r.id)+'"','btn-small')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="card-body"><p class="muted">Nenhuma inconsistência estrutural dessas categorias foi identificada neste recorte.</p></div>';
+ return '<section class="card" id="pending-integrity"><div class="card-head"><div><h2>Integridade dos dados</h2><p class="sub">Responsáveis a confirmar, conflitos de duplicidade e linhas consolidadas são exibidos separadamente dos alertas pedagógicos.</p></div>'+badge(rows.length+' item(ns)',rows.length?'warn':'good')+'</div>'+body+'</section>';
+}
+window.DED_ATTENTION=Object.freeze({attentionSnapshot,attentionCenter,attentionIntegrityRows,attentionIntegritySection});
