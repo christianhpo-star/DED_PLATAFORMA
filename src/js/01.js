@@ -2,6 +2,8 @@
 
 const DATA = JSON.parse(document.getElementById('source-data').textContent);
 DATA.calendar=Array.isArray(DATA.calendar)?DATA.calendar:[];
+DATA.refs=DATA.refs&&typeof DATA.refs==='object'?DATA.refs:{};
+DATA.classMatrix=DATA.classMatrix&&typeof DATA.classMatrix==='object'?DATA.classMatrix:{};
 // Referências incorporadas somente quando documentalmente válidas. REG e INT são tratados separadamente.
 const MATRIX_SOURCE_REG='Resolução SEE nº 5.212/2025 · Anexo XII · Ensino Médio Noturno 2026 (21 A/S presenciais registráveis no DED; atividades complementares permanecem separadas).';
 const MATRIX_SOURCE_INT1='Resolução SEE nº 5.212/2025 · EMTI Profissional 2026 · 1º ano (45 A/S).';
@@ -18,7 +20,15 @@ const OFFICIAL_WEEKLY=Object.freeze({"EM_REG_1|LINGUA PORTUGUESA":4,"EM_REG_1|ED
 function classifySchoolBucket(shortClass){return classifySchoolProfile(shortClass).bucket;}
 function normalizeEmbeddedRows(rows){
  const list=rows||[],bilingualClasses=new Set(list.filter(r=>isBilingualComponent(r.componente)).map(r=>String(r.cod_turma||r.shortClass||r.turma||'')));
- for(const r of list){const shortClass=r.shortClass||extractShortClass(r.turma),profile=classifySchoolProfile(shortClass),component=normalizeMatrixKey(r.componente),classKey=String(r.cod_turma||shortClass||r.turma||'');r.shortClass=shortClass;r.bucket=profile.bucket;r.courseKey=profile.courseKey;r.offer=profile.offer;r.bilingual=bilingualClasses.has(classKey);r.unit=component.startsWith('FREQUENCIA')?'dias':'aulas';r.refKey=`${profile.bucket}|${component}`;r.baseComponent=r.componente;r.professorCandidates=Array.isArray(r.professorCandidates)&&r.professorCandidates.length?r.professorCandidates:[r.professor];r.teacherConflict=r.professorCandidates.length>1;}
+ for(const r of list){
+  const shortClass=r.shortClass||extractShortClass(r.turma),profile=classifySchoolProfile(shortClass),component=normalizeMatrixKey(r.componente),classKey=normalizeMatrixKey(shortClass),matrix=DATA.classMatrix[classKey]||null,baseRefKey=`${profile.bucket}|${component}`,classWeekly=matrix?.components?.[component];
+  r.shortClass=shortClass;r.bucket=profile.bucket;r.courseKey=profile.courseKey;r.offer=profile.offer;r.bilingual=bilingualClasses.has(String(r.cod_turma||shortClass||r.turma||''));r.unit=component.startsWith('FREQUENCIA')?'dias':'aulas';r.baseComponent=r.componente;r.monitoringExcluded=!!matrix?.excludedComponents?.includes(component);
+  if(classWeekly!==undefined&&classWeekly!==null){
+   r.refKey=`CLASS:${classKey}|${component}`;
+   DATA.refs[r.refKey]={bucket:profile.bucket,component:r.componente,weekly:Number(classWeekly),source:matrix.source||'Matriz escolar por turma/componente.'};
+  }else r.refKey=baseRefKey;
+  r.professorCandidates=Array.isArray(r.professorCandidates)&&r.professorCandidates.length?r.professorCandidates:[r.professor];r.teacherConflict=r.professorCandidates.length>1;
+ }
 }
 normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t1);
 for(const [key,weekly] of Object.entries(OFFICIAL_WEEKLY)){const [bucket,...parts]=key.split('|'),componentKey=parts.join('|');const sample=[...(DATA.raw||[]),...(DATA.raw_t1||[])].find(r=>r.refKey===key);const source=bucket.startsWith('EM_REG_')?MATRIX_SOURCE_REG:bucket==='EM_INT_1'?MATRIX_SOURCE_INT1:MATRIX_SOURCE_INT_CONT;DATA.refs[key]={...(DATA.refs[key]||{}),bucket,component:sample?.componente||componentKey,weekly,source};}
