@@ -4,6 +4,11 @@ const DATA = JSON.parse(document.getElementById('source-data').textContent);
 DATA.calendar=Array.isArray(DATA.calendar)?DATA.calendar:[];
 DATA.refs=DATA.refs&&typeof DATA.refs==='object'?DATA.refs:{};
 DATA.classMatrix=DATA.classMatrix&&typeof DATA.classMatrix==='object'?DATA.classMatrix:{};
+const CLASS_MATRIX_BY_REPORT=new Map();
+for(const [label,entry] of Object.entries(DATA.classMatrix.classes||DATA.classMatrix||{})){
+ const reportClass=normalizeMatrixKey(entry?.report_class||label),components=Object.fromEntries(Object.entries(entry?.components||{}).map(([k,v])=>[normalizeMatrixKey(k),v])),excludedComponents=(entry?.external_not_monitored?.components||entry?.excludedComponents||[]).map(normalizeMatrixKey);
+ CLASS_MATRIX_BY_REPORT.set(reportClass,{...entry,components,excludedComponents});
+}
 // Referências incorporadas somente quando documentalmente válidas. REG e INT são tratados separadamente.
 const MATRIX_SOURCE_REG='Resolução SEE nº 5.212/2025 · Anexo XII · Ensino Médio Noturno 2026 (21 A/S presenciais registráveis no DED; atividades complementares permanecem separadas).';
 const MATRIX_SOURCE_INT1='Resolução SEE nº 5.212/2025 · EMTI Profissional 2026 · 1º ano (45 A/S).';
@@ -21,7 +26,7 @@ function classifySchoolBucket(shortClass){return classifySchoolProfile(shortClas
 function normalizeEmbeddedRows(rows){
  const list=rows||[],bilingualClasses=new Set(list.filter(r=>isBilingualComponent(r.componente)).map(r=>String(r.cod_turma||r.shortClass||r.turma||'')));
  for(const r of list){
-  const shortClass=r.shortClass||extractShortClass(r.turma),profile=classifySchoolProfile(shortClass),component=normalizeMatrixKey(r.componente),classKey=normalizeMatrixKey(shortClass),matrix=DATA.classMatrix[classKey]||null,baseRefKey=`${profile.bucket}|${component}`,classWeekly=matrix?.components?.[component];
+  const shortClass=r.shortClass||extractShortClass(r.turma),profile=classifySchoolProfile(shortClass),component=normalizeMatrixKey(r.componente),classKey=normalizeMatrixKey(shortClass),matrix=CLASS_MATRIX_BY_REPORT.get(classKey)||null,baseRefKey=`${profile.bucket}|${component}`,classWeekly=matrix?.components?.[component];
   r.shortClass=shortClass;r.bucket=profile.bucket;r.courseKey=profile.courseKey;r.offer=profile.offer;r.bilingual=bilingualClasses.has(String(r.cod_turma||shortClass||r.turma||''));r.unit=component.startsWith('FREQUENCIA')?'dias':'aulas';r.baseComponent=r.componente;r.monitoringExcluded=!!matrix?.excludedComponents?.includes(component);
   if(classWeekly!==undefined&&classWeekly!==null){
    r.refKey=`CLASS:${classKey}|${component}`;
