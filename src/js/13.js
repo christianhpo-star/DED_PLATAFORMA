@@ -57,7 +57,7 @@ document.addEventListener('click',e=>{
  else if(a==='apply-days'){const input=document.getElementById('reference-days');if(!input.reportValidity())return;const v=Number(input.value);if(!integer(v)||v<1||v>200){toast('Use um n\u00famero inteiro de dias entre 1 e 200.');return;}cfg.days=v;if(saveConfig())toast('Dias aplicados. Todas as estimativas foram recalculadas.');render();}
  else if(a==='save-html')saveHTML();
  else if(a==='export-config')exportConfig();
- else if(a==='export-data-backup')downloadFile('DED_'+schoolFileStem()+'_backup_planilhas.json',JSON.stringify({version:1,school:schoolProfile(),exportedAt:new Date().toISOString(),...dataStore},null,2),'application/json;charset=utf-8');
+ else if(a==='export-data-backup')exportDataBackup();
  else if(a==='import-config')document.getElementById('import-settings').click();
  else if(a==='reset-config')askConfirm('Restaurar refer\u00eancias originais?','Isso remove as previs\u00f5es espec\u00edficas e as cargas semanais ajustadas deste painel, e volta às referências curriculares incorporadas. Ajustes locais de calendário também serão removidos. Os registros originais do DED n\u00e3o ser\u00e3o alterados.','confirm-reset','Restaurar');
  else if(a==='confirm-reset'){cfg={...defaultConfig(),school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};saveConfig();document.getElementById('confirm-dialog').close();render();toast('Refer\u00eancias originais restauradas.');}
