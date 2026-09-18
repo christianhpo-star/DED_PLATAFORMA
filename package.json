@@ -2,6 +2,6 @@
   "name": "ded-plataforma",
   "private": true,
   "scripts": {
-    "test": "node tests/regression-curriculum.js && node tests/backup-recovery.js && node tests/navigation-ia.js && node tests/attention-center.js && node tests/data-freshness.js && node tests/weekly-history.js"
+    "test": "node tests/regression-curriculum.js && node tests/backup-recovery.js && node tests/navigation-ia.js && node tests/attention-center.js && node tests/data-freshness.js && node tests/weekly-history.js && node tests/weekly-unassessed.js"
   }
 }

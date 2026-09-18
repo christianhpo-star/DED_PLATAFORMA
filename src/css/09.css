@@ -1,0 +1,10 @@
+/* Distinção visual entre diário abaixo do mínimo e diário sem base suficiente. */
+.weekly-state-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.weekly-state-section{margin-top:14px}
+.weekly-state-section>h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:0 0 8px}
+.weekly-state-section.unassessed{border-top:1px dashed #d9c69f;padding-top:14px}
+.weekly-unassessed-table .status{white-space:normal;text-align:left}
+.weekly-unassessed-only{border-color:#ead9b5}
+.weekly-unassessed-only>.card-head{background:#fffdf8}
+@media(max-width:650px){.weekly-state-badges{align-items:flex-start}.weekly-unassessed-table{min-width:620px}}
+@media print{.weekly-state-badges{margin:8px 0 12px}.weekly-state-section{break-inside:avoid}.weekly-unassessed-table .status{font-size:8.5px}}
