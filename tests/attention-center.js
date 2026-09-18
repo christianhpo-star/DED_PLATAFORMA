@@ -8,6 +8,7 @@ const code=fs.readFileSync(path.join(root,'src','js','17.js'),'utf8');
 const events=fs.readFileSync(path.join(root,'src','js','13.js'),'utf8');
 const grades=fs.readFileSync(path.join(root,'src','js','04.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'src','index.html'),'utf8');
+const bootstrap=fs.readFileSync(path.join(root,'src','js','14.js'),'utf8');
 const rows=[
  {id:'a',cod_turma:'1',shortClass:'1 REG 1',turma:'1 REG 1',professor:'A',componente:'MAT',unit:'aulas',status:'ABERTO',plan:{value:null},comparable:false,grade:{status:'none'},teacherConflict:true,dataConflict:false,duplicateSourceRows:1},
  {id:'b',cod_turma:'2',shortClass:'1 REG 2',turma:'1 REG 2',professor:'B',componente:'POR',unit:'aulas',status:'FECHADO',plan:{value:10},comparable:true,grade:{status:'partial'},teacherConflict:false,dataConflict:true,duplicateSourceRows:2},
@@ -57,4 +58,5 @@ assert(!markup.includes('total de pendências'),'Central não deve apresentar ag
 for(const action of ['attention-weekly','attention-closure','attention-grades','attention-references','attention-integrity'])assert(events.includes("a==='"+action+"'"),'Ação contextual ausente: '+action);
 assert(grades.includes("state.gradeMode==='attention'&&['none','partial','unknown'].includes"),'Filtro de notas em atenção deve reunir situações acionáveis sem alterar classificações.');
 assert(!html.includes('id="nav-open"'),'Badge agregado ambíguo não deve voltar à navegação principal.');
+assert(bootstrap.includes("document.addEventListener('DOMContentLoaded',initializeDedApp"),'Bootstrap deve aguardar o carregamento dos módulos funcionais posteriores ao 14.js.');
 console.log('OK: categorias, contagens e navegação da Central de Atenção verificadas.');
