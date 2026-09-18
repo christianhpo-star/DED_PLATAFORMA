@@ -1,0 +1,14 @@
+/* Histórico semanal navegável e gerenciamento de snapshots. */
+.weekly-history-table .selected-snapshot td{background:#f4f7ff}
+.weekly-history-table .selected-snapshot td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.weekly-history-actions{gap:5px;min-width:320px}
+.weekly-history-actions .btn{white-space:nowrap}
+.weekly-history-mode{align-items:center}
+.weekly-history-mode .btn{margin-left:auto;flex-shrink:0}
+.weekly-manage-actions{margin-top:16px}
+.weekly-manage-actions .btn-danger{border-color:#e4b6b6;color:var(--red);background:var(--red-soft)}
+.weekly-manage-actions .btn-danger:hover{border-color:var(--red)}
+#weekly-report-current{scroll-margin-top:20px}
+@media(max-width:800px){.weekly-history-actions{min-width:0}.weekly-history-actions .btn{white-space:normal}.weekly-history-mode{align-items:stretch;flex-direction:column}.weekly-history-mode .btn{margin-left:0;width:100%}}
+@media(max-width:490px){.weekly-history-actions,.weekly-manage-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.weekly-history-actions .btn,.weekly-manage-actions .btn{width:100%;justify-content:center}}
+@media print{.weekly-history-actions,.weekly-history-mode .btn,.weekly-manage-actions{display:none!important}}

@@ -25,7 +25,7 @@ function latestDataImportedAt(){
 }
 function dataFreshnessContext(page=state.page,period=state.trimester){
  if(page==='weekly'){
-  const cur=dataStore.weeklySnapshots.at(-1),prev=dataStore.weeklySnapshots.at(-2);
+  const {cur,prev}=weeklySnapshotContext();
   if(!cur)return {nature:'SEM SNAPSHOT',title:'3º trimestre — acompanhamento semanal sem snapshot',detail:'Adicione a primeira atualização para comparar novos lançamentos desde 10/09/2026.',short:'3º tri · sem snapshot'};
   const start=prev?.date||'2026-09-10',title='Semana '+formatDateBR(start)+' → '+formatDateBR(cur.date)+' — novos lançamentos';
   const detail=(prev?'Comparação entre duas extrações. ':'Primeira comparação com base zero em 10/09/2026. ')+(cur.intervalDays??0)+' dia(s) letivo(s) · importado em '+temporalDateTime(cur.importedAt)+(cur.fileName?' · '+cur.fileName:'')+(cur.fileModifiedAt?' · arquivo no dispositivo: '+temporalDate(cur.fileModifiedAt):'');

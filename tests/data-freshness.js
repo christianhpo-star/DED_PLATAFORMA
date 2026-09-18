@@ -16,6 +16,7 @@ function context(){
   initialTrimester:()=> '3',
   window:{}
  };
+ ctx.weeklySnapshotContext=()=>{const snaps=ctx.dataStore.weeklySnapshots;return {cur:snaps.at(-1)||null,prev:snaps.at(-2)||null};};
  vm.createContext(ctx);vm.runInContext(code,ctx);return ctx;
 }
 let ctx=context();

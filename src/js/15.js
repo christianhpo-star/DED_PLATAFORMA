@@ -19,7 +19,7 @@ function setImportStatus(kind,titleText,detail='',actionHtml=''){
 function clearImportStatus(){const host=document.getElementById('import-status');if(host)host.innerHTML='';}
 function setDataOperationBusy(busy){
  safeImportBusy=!!busy;
- document.querySelectorAll('#replace-t1-file,#replace-t2-file,#weekly-file,#restore-data-backup-file').forEach(el=>{el.disabled=!!busy;el.setAttribute('aria-busy',busy?'true':'false');});
+ document.querySelectorAll('#replace-t1-file,#replace-t2-file,#weekly-file,#restore-data-backup-file,#manage-weekly-file').forEach(el=>{el.disabled=!!busy;el.setAttribute('aria-busy',busy?'true':'false');});
  document.querySelectorAll('[data-action="restore-data-backup"]').forEach(el=>{el.disabled=!!busy;});
 }
 function setImportStep(step,titleText,detail=''){setImportStatus('working',titleText,`Etapa ${step} de 6 · ${detail}`);}
@@ -90,11 +90,11 @@ async function stageImport(file,target,date=''){
  setImportStep(4,'Preparando prévia','Nenhum dado foi aplicado; revise o resumo antes de confirmar.');await nextImportPaint();
  return buildImportPreview(candidate);
 }
-async function queueSafeImport(file,target){
+async function queueSafeImport(file,target,dateOverride=''){
  if(safeImportBusy){setImportStatus('working','Operação em andamento','Conclua ou cancele a operação atual antes de selecionar outro arquivo.');return;}
  setDataOperationBusy(true);
  try{
-  const date=target==='weekly'?document.getElementById('weekly-date')?.value||'':'';
+  const date=target==='weekly'?(dateOverride||document.getElementById('weekly-date')?.value||''):'';
   await stageImport(file,target,date);
  }catch(err){
   safeImportStage=null;setDataOperationBusy(false);
@@ -132,7 +132,7 @@ function commitImport(candidate=safeImportStage){
   try{if(previousRestore===null)localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);else localStorage.setItem(SAFE_IMPORT_RESTORE_KEY,previousRestore);}catch(e){}
   throw new Error('A atualização não pôde ser salva neste navegador. A base anterior foi restaurada.');
  }
- if(candidate.target==='weekly'){state.trimester='3';state.weeklySelected.clear();}
+ if(candidate.target==='weekly'){state.trimester='3';state.weeklySnapshotDate=candidate.date;state.weeklySelected.clear();}
  syncFilterOptions();render();
  const label=importTargetLabel(candidate),detail=candidate.target==='weekly'?(candidate.replacesExisting?'Snapshot da mesma data substituído com segurança.':'Nova atualização semanal armazenada.'):`Base do ${label} substituída com ${candidate.rows.length} registros lógicos.`;
  setImportStatus('success','Concluído',`Etapa 6 de 6 · ${detail} Ponto de restauração disponível.` ,btn('Desfazer última substituição','undo-last-import','','btn-small'));
@@ -147,7 +147,7 @@ function undoLastImport(){
   setImportStatus('error','Não foi possível desfazer','O navegador recusou a gravação. A versão atual foi mantida.');return;
  }
  try{localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
- syncFilterOptions();render();setImportStatus('success','Substituição desfeita','A versão anterior da base foi restaurada.');
+ state.weeklySnapshotDate='';state.weeklyManageDate='';syncFilterOptions();render();setImportStatus('success','Substituição desfeita','A versão anterior da base foi restaurada.');
 }
 function cancelStagedImport(){safeImportStage=null;setDataOperationBusy(false);const d=document.getElementById('confirm-dialog');if(d?.open)d.close();setImportStatus('neutral','Importação cancelada','Nenhum dado da base foi alterado.');}
 document.addEventListener('click',e=>{

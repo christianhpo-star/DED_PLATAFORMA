@@ -19,6 +19,7 @@ function renderSectionNavigation(page){
 }
 function switchPage(page,scroll=true){
  if(!pageMeta[page])page='overview';
+ if(page!=='weekly'){state.weeklySnapshotDate='';state.weeklyManageDate='';}
  if(page==='consolidated'){state.trimester='all';RAW=getActiveRaw();syncFilterOptions();}
  state.page=page;
  const area=pageArea[page]||'overview';
