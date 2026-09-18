@@ -2,7 +2,9 @@
 // Fluxo transacional de importação: selecionar -> validar -> prévia -> confirmar -> aplicar -> desfazer.
 const SAFE_IMPORT_RESTORE_KEY=`${DATA_STORE_KEY}:last-import-restore-v1`;
 let safeImportStage=null;
+let safeImportBusy=false;
 function safeClone(value){return JSON.parse(JSON.stringify(value));}
+const SAFE_IMPORT_EMBEDDED_BASE={t1:dataStore.t1===null?safeClone(DATA.raw_t1||[]):null,t2:dataStore.t2===null?safeClone(DATA.raw||[]):null};
 function importStatusHost(){
  let host=document.getElementById('import-status');
  if(!host){host=document.createElement('div');host.id='import-status';host.className='import-status-host';host.setAttribute('aria-live','polite');document.getElementById('view')?.before(host);}
@@ -71,10 +73,13 @@ async function stageImport(file,target,date=''){
  return buildImportPreview(candidate);
 }
 async function queueSafeImport(file,target){
+ if(safeImportBusy){setImportStatus('working','Importação em andamento','Conclua ou cancele a prévia atual antes de selecionar outro arquivo.');return;}
+ safeImportBusy=true;
  try{
   const date=target==='weekly'?document.getElementById('weekly-date')?.value||'':'';
   await stageImport(file,target,date);
  }catch(err){safeImportStage=null;setImportStatus('error','Planilha não aplicada',err?.message||'Não foi possível validar o arquivo.');}
+ finally{safeImportBusy=false;}
 }
 function createLocalRestorePoint(reason){
  const point={version:1,createdAt:Date.now(),reason,dataStore:safeClone(dataStore),refs:safeClone(DATA.refs)};
@@ -84,12 +89,13 @@ function readLocalRestorePoint(){try{const p=JSON.parse(localStorage.getItem(SAF
 function hydrateDataStore(store,refs){
  dataStore={t1:Array.isArray(store?.t1)?store.t1:null,t2:Array.isArray(store?.t2)?store.t2:null,weeklySnapshots:Array.isArray(store?.weeklySnapshots)?store.weeklySnapshots:[]};
  if(refs&&typeof refs==='object')DATA.refs=safeClone(refs);
- DATA.raw_t1=dataStore.t1||[];DATA.raw=dataStore.t2||[];recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
+ DATA.raw_t1=dataStore.t1===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t1||[]):dataStore.t1;DATA.raw=dataStore.t2===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t2||[]):dataStore.t2;recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
  normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();
 }
 function commitImport(candidate=safeImportStage){
  if(!candidate)return;
  validateImportCandidate(candidate);
+ setImportStatus('working','Aplicando atualização','Criando ponto de restauração e gravando a base somente após sua confirmação.');
  const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);
  createLocalRestorePoint(`Antes de ${importTargetLabel(candidate)} · ${candidate.fileName}`);
  DATA.refs=safeClone(candidate.refs);
