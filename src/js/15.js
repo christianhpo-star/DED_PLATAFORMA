@@ -12,9 +12,26 @@ function importStatusHost(){
 }
 function setImportStatus(kind,titleText,detail='',actionHtml=''){
  const host=importStatusHost();if(!host)return;
- host.innerHTML=`<div class="import-status ${esc(kind)}" role="status"><div><strong>${esc(titleText)}</strong>${detail?`<span>${esc(detail)}</span>`:''}</div>${actionHtml}</div>`;
+ const dismiss=kind==='error'?btn('Fechar aviso','dismiss-import-status','','btn-small btn-quiet'):'';
+ const actions=actionHtml||dismiss?`<div class="import-status-actions">${actionHtml}${dismiss}</div>`:'';
+ host.innerHTML=`<div class="import-status ${esc(kind)}" role="${kind==='error'?'alert':'status'}"><div><strong>${esc(titleText)}</strong>${detail?`<span>${esc(detail)}</span>`:''}</div>${actions}</div>`;
 }
 function clearImportStatus(){const host=document.getElementById('import-status');if(host)host.innerHTML='';}
+function setDataOperationBusy(busy){
+ safeImportBusy=!!busy;
+ document.querySelectorAll('#replace-t1-file,#replace-t2-file,#weekly-file,#restore-data-backup-file').forEach(el=>{el.disabled=!!busy;el.setAttribute('aria-busy',busy?'true':'false');});
+ document.querySelectorAll('[data-action="restore-data-backup"]').forEach(el=>{el.disabled=!!busy;});
+}
+function setImportStep(step,titleText,detail=''){setImportStatus('working',titleText,`Etapa ${step} de 6 · ${detail}`);}
+function nextImportPaint(){return new Promise(resolve=>requestAnimationFrame(()=>resolve()));}
+function importRecoveryHint(message){
+ const m=normalize(message||'');
+ if(m.includes('cabecalho')||m.includes('relatorio de lancamentos'))return 'Próximo passo: selecione o Relatório de Lançamentos do Professor em formato XLSX, sem alterar os cabeçalhos.';
+ if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira no arquivo se REG está no turno NOITE e INT no turno INTEGRAL.';
+ if(m.includes('xlsx valido')||m.includes('estrutura zip')||m.includes('xml interno'))return 'Próximo passo: gere novamente o XLSX no sistema de origem e tente com o arquivo sem edição intermediária.';
+ if(m.includes('guardar')||m.includes('salv')||m.includes('armazen'))return 'Próximo passo: libere espaço do navegador ou exporte uma cópia/backup antes de tentar novamente.';
+ return 'Próximo passo: confira o arquivo e os dados indicados na mensagem; a base atual não foi alterada.';
+}
 function candidateHasWeekly(r,refs){
  if(Object.hasOwn(cfg.weekly||{},r.refKey))return cfg.weekly[r.refKey]!==null;
  const v=refs?.[r.refKey]?.weekly;return v!==null&&v!==undefined;
@@ -60,26 +77,30 @@ function buildImportPreview(candidate){
  return candidate;
 }
 async function stageImport(file,target,date=''){
- setImportStatus('working','Arquivo selecionado',file.name);
+ setImportStep(1,'Lendo arquivo',file.name);await nextImportPaint();
  const refsBefore=safeClone(DATA.refs);let rows,candidateRefs;
  try{
-  await Promise.resolve();setImportStatus('working','Lendo e validando a planilha','Conferindo estrutura, turmas, componentes e modalidade.');
+  setImportStep(2,'Validando estrutura','Conferindo formato, cabeçalhos, modalidade e turno.');
   rows=await parseTeacherReport(file,target==='1'?'t':target==='2'?'r':'w');
   candidateRefs=safeClone(DATA.refs);
  }finally{DATA.refs=refsBefore;}
+ setImportStep(3,'Conferindo turmas e componentes','Identificando registros lógicos, referências e conflitos.');await nextImportPaint();
  const candidate={target,date,fileName:file.name,fileSize:file.size,readAt:Date.now(),rows,refs:candidateRefs,replacesExisting:target==='weekly'?dataStore.weeklySnapshots.some(s=>s.date===date):true};
  candidate.summary=importSummary(rows,candidateRefs);validateImportCandidate(candidate);safeImportStage=candidate;
- setImportStatus('ready','Prévia pronta','Confira o resumo e confirme somente se os dados estiverem corretos.');
+ setImportStep(4,'Preparando prévia','Nenhum dado foi aplicado; revise o resumo antes de confirmar.');await nextImportPaint();
  return buildImportPreview(candidate);
 }
 async function queueSafeImport(file,target){
- if(safeImportBusy){setImportStatus('working','Importação em andamento','Conclua ou cancele a prévia atual antes de selecionar outro arquivo.');return;}
- safeImportBusy=true;
+ if(safeImportBusy){setImportStatus('working','Operação em andamento','Conclua ou cancele a operação atual antes de selecionar outro arquivo.');return;}
+ setDataOperationBusy(true);
  try{
   const date=target==='weekly'?document.getElementById('weekly-date')?.value||'':'';
   await stageImport(file,target,date);
- }catch(err){safeImportStage=null;setImportStatus('error','Planilha não aplicada',err?.message||'Não foi possível validar o arquivo.');}
- finally{safeImportBusy=false;}
+ }catch(err){
+  safeImportStage=null;setDataOperationBusy(false);
+  const message=err?.message||'Não foi possível validar o arquivo.';
+  setImportStatus('error','Planilha não aplicada',message+' '+importRecoveryHint(message));
+ }
 }
 function createLocalRestorePoint(reason){
  const point={version:1,createdAt:Date.now(),reason,dataStore:safeClone(dataStore),refs:safeClone(DATA.refs)};
@@ -95,8 +116,8 @@ function hydrateDataStore(store,refs){
 function commitImport(candidate=safeImportStage){
  if(!candidate)return;
  validateImportCandidate(candidate);
- setImportStatus('working','Aplicando atualização','Criando ponto de restauração e gravando a base somente após sua confirmação.');
- const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);
+ setImportStep(5,'Aplicando atualização','Criando ponto de restauração e gravando a base somente após sua confirmação.');
+ const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);let previousRestore=null;try{previousRestore=localStorage.getItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
  createLocalRestorePoint(`Antes de ${importTargetLabel(candidate)} · ${candidate.fileName}`);
  DATA.refs=safeClone(candidate.refs);
  if(candidate.target==='1')dataStore.t1=safeClone(candidate.rows);
@@ -108,14 +129,14 @@ function commitImport(candidate=safeImportStage){
  hydrateDataStore(dataStore,DATA.refs);
  if(!saveDataStore()){
   hydrateDataStore(beforeStore,beforeRefs);
-  try{localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
+  try{if(previousRestore===null)localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);else localStorage.setItem(SAFE_IMPORT_RESTORE_KEY,previousRestore);}catch(e){}
   throw new Error('A atualização não pôde ser salva neste navegador. A base anterior foi restaurada.');
  }
  if(candidate.target==='weekly'){state.trimester='3';state.weeklySelected.clear();}
  syncFilterOptions();render();
  const label=importTargetLabel(candidate),detail=candidate.target==='weekly'?(candidate.replacesExisting?'Snapshot da mesma data substituído com segurança.':'Nova atualização semanal armazenada.'):`Base do ${label} substituída com ${candidate.rows.length} registros lógicos.`;
- setImportStatus('success','Atualização concluída',detail+` Ponto de restauração disponível.` ,btn('Desfazer última substituição','undo-last-import','','btn-small'));
- safeImportStage=null;const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
+ setImportStatus('success','Concluído',`Etapa 6 de 6 · ${detail} Ponto de restauração disponível.` ,btn('Desfazer última substituição','undo-last-import','','btn-small'));
+ safeImportStage=null;setDataOperationBusy(false);const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
 }
 function undoLastImport(){
  const point=readLocalRestorePoint();if(!point){setImportStatus('error','Não há substituição para desfazer','O ponto de restauração local não está mais disponível.');return;}
@@ -128,13 +149,14 @@ function undoLastImport(){
  try{localStorage.removeItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
  syncFilterOptions();render();setImportStatus('success','Substituição desfeita','A versão anterior da base foi restaurada.');
 }
-function cancelStagedImport(){safeImportStage=null;const d=document.getElementById('confirm-dialog');if(d?.open)d.close();setImportStatus('neutral','Importação cancelada','Nenhum dado da base foi alterado.');}
+function cancelStagedImport(){safeImportStage=null;setDataOperationBusy(false);const d=document.getElementById('confirm-dialog');if(d?.open)d.close();setImportStatus('neutral','Importação cancelada','Nenhum dado da base foi alterado.');}
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-action]');if(!el)return;
- if(el.dataset.action==='confirm-staged-import'){try{commitImport();}catch(err){setImportStatus('error','Atualização não aplicada',err?.message||'Falha ao salvar a atualização.');}}
+ if(el.dataset.action==='confirm-staged-import'){try{commitImport();}catch(err){const message=err?.message||'Falha ao salvar a atualização.';setImportStatus('error','Atualização não aplicada',message+' '+importRecoveryHint(message));}}
  else if(el.dataset.action==='cancel-staged-import')cancelStagedImport();
  else if(el.dataset.action==='undo-last-import')undoLastImport();
+ else if(el.dataset.action==='dismiss-import-status')clearImportStatus();
 });
-document.getElementById('confirm-dialog')?.addEventListener('close',()=>{if(safeImportStage)safeImportStage=null;});
+document.getElementById('confirm-dialog')?.addEventListener('close',()=>{if(safeImportStage){safeImportStage=null;setDataOperationBusy(false);}});
 const existingRestore=readLocalRestorePoint();if(existingRestore)setImportStatus('neutral','Ponto de restauração disponível','A última substituição de planilha ainda pode ser desfeita.',btn('Desfazer última substituição','undo-last-import','','btn-small'));
 window.DED_IMPORT_SAFETY=Object.freeze({stageImport,validateImportCandidate,buildImportPreview,commitImport,createLocalRestorePoint,undoLastImport});

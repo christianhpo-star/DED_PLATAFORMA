@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const jsDir = path.join(root, 'src', 'js');
 const indexPath = path.join(root, 'src', 'index.html');
 const files = fs.readdirSync(jsDir).filter(f => /^\d{2}\.js$/.test(f)).sort();
-assert.deepStrictEqual(files, Array.from({length:15},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..15.');
+assert.deepStrictEqual(files, Array.from({length:16},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..16.');
 const js = files.map(f => fs.readFileSync(path.join(jsDir,f),'utf8')).join('\n');
 new Function(js); // syntax-only compile; does not execute DOM code
 
@@ -33,7 +33,7 @@ assert(js.includes("source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUA
 
 const html = fs.readFileSync(indexPath,'utf8');
 const scripts = [...html.matchAll(/<script src="js\/(\d{2})\.js"><\/script>/g)].map(m=>m[1]);
-assert.deepStrictEqual(scripts, Array.from({length:15},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 15 módulos JS em ordem.');
+assert.deepStrictEqual(scripts, Array.from({length:16},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 16 módulos JS em ordem.');
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
 assert.deepStrictEqual(styles, ['01','02','03','04','05'], 'index.html deve carregar os cinco módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
@@ -49,6 +49,17 @@ assert(importSafety.includes('SAFE_IMPORT_RESTORE_KEY'),'Substituições devem p
 assert(importSafety.includes('replacesExisting'),'Mesma data semanal deve ser identificada antes da confirmação.');
 assert(importSafety.includes("setImportStatus('error','Planilha não aplicada'"),'Erro de parsing/validação deve permanecer visível sem aplicar a base.');
 assert(importSafety.includes("cancelStagedImport"),'Prévia deve poder ser cancelada sem commit.');
+const backupRecovery = fs.readFileSync(path.join(jsDir,'16.js'),'utf8');
+for (const step of ['Lendo arquivo','Validando estrutura','Conferindo turmas e componentes','Preparando prévia','Aplicando atualização','Concluído']) assert(js.includes(step),'Etapa de processamento ausente: '+step);
+assert(importSafety.includes('setDataOperationBusy(true)'),'Importação deve bloquear ação concorrente equivalente durante processamento.');
+assert(importSafety.includes('Próximo passo:'),'Erro persistente deve orientar a próxima ação.');
+assert(importSafety.includes("kind==='error'?'alert':'status'"),'Erro crítico deve usar semântica persistente de alerta.');
+for (const fn of ['backupDataStorePayload','validateDataBackup','stageDataBackupRestore','commitDataBackupRestore']) assert(new RegExp('function\\s+'+fn+'\\s*\\(').test(backupRecovery),'Fluxo de restauração ausente: '+fn);
+assert(backupRecovery.includes('DATA_BACKUP_VERSION=2'),'Backup deve possuir versão explícita.');
+assert(backupRecovery.includes("raw.datasetId!==DATA.datasetId"),'Restauração deve validar dataset.');
+assert(backupRecovery.includes("createLocalRestorePoint('Antes de restaurar backup"),'Restauração deve preservar a versão anterior.');
+assert(html.includes('id="restore-data-backup-file"'),'Input local de restauração de backup deve existir.');
+
 
 const matrixPath = path.join(root,'data','matrizes','emti_2026_anonimizada.json');
 assert(fs.existsSync(matrixPath),'Matriz EMTI anonimizada deve permanecer versionada.');
