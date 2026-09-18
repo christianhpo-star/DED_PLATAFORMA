@@ -1,0 +1,26 @@
+/* P0 import safety: staged preview, persistent status and one-step undo. */
+.import-status-host{margin:0 0 18px}
+.import-status{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid var(--line);border-left-width:4px;border-radius:10px;background:white;padding:13px 15px;font-size:12px;line-height:1.55}
+.import-status>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.import-status strong{font-size:12px}
+.import-status span{color:var(--muted)}
+.import-status.working{border-left-color:var(--blue);background:#f7f9ff}
+.import-status.ready{border-left-color:var(--amber);background:#fffaf1}
+.import-status.success{border-left-color:var(--teal);background:var(--teal-soft)}
+.import-status.error{border-left-color:var(--red);background:var(--red-soft)}
+.import-status.neutral{border-left-color:#8995aa;background:#f8f9fb}
+.import-preview-file{display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--line);padding-bottom:15px;margin-bottom:16px;overflow-wrap:anywhere}
+.import-preview-file strong{font-size:13px}
+.import-preview-file span{font-size:10.5px;color:var(--muted)}
+.import-preview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.import-preview-grid>div{border:1px solid var(--line);border-radius:9px;padding:12px;background:#fafbfd}
+.import-preview-grid span{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}
+.import-preview-grid strong{display:block;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+.import-preview-warnings,.import-preview-ok{border-radius:9px;padding:12px 14px;margin:0 0 16px;font-size:11px;line-height:1.6}
+.import-preview-warnings{border:1px solid #ebd5af;background:#fffaf1}
+.import-preview-warnings strong{display:block;margin-bottom:4px}
+.import-preview-warnings ul{margin:0;padding-left:18px}
+.import-preview-ok{display:flex;align-items:center;gap:8px;border:1px solid #cce7df;background:var(--teal-soft);color:#176352}
+@media(max-width:650px){.import-status{align-items:stretch;flex-direction:column}.import-status .btn{width:100%}.import-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.import-preview-grid{grid-template-columns:1fr}.import-preview-grid strong{font-size:21px}}
+@media print{.import-status-host{display:none!important}}
