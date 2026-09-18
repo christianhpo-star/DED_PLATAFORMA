@@ -1,0 +1,63 @@
+/* Filtros progressivos, alvos de toque e refinamento responsivo. */
+.primary-filters{display:grid;grid-template-columns:minmax(155px,.9fr) minmax(155px,1fr) minmax(175px,1fr) minmax(220px,1.35fr) 42px;gap:12px;align-items:end}
+.primary-filters>.reset-filter{align-self:end}
+.filter-controls-row{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.advanced-filters{min-width:190px}
+.advanced-filters summary{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:11.5px;font-weight:650;cursor:pointer;list-style:none}
+.advanced-filters summary::-webkit-details-marker{display:none}
+.advanced-filters summary svg{width:14px;height:14px;color:var(--blue)}
+.advanced-filters[open] summary{border-color:#b9c8e7;background:#f7f9ff}
+.advanced-filter-fields{display:grid;grid-template-columns:minmax(190px,1fr) minmax(220px,1.2fr);gap:12px;margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:9px;background:#f8fafd}
+.filter-count{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:999px;background:var(--blue);color:#fff;font-size:10px;padding:0 5px}
+.active-filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.active-filter-label{font-size:11px;font-weight:650;color:var(--muted)}
+.active-filter-chip{display:inline-flex;align-items:center;gap:7px;min-height:32px;max-width:320px;padding:5px 9px;border:1px solid #cad5e8;border-radius:999px;background:#f8faff;color:#29446f;font-size:11px;font-weight:600;text-align:left}
+.active-filter-chip>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.active-filter-chip>span:last-child{font-size:16px;line-height:1}
+.btn,.field label,.setting-note,.card-foot,.filter-foot,.help-details summary{font-size:max(11px,inherit)}
+.notice{font-size:max(11.5px,inherit)}
+button:focus-visible,summary:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.table-wrap:focus-visible{outline:3px solid #5f7fd1;outline-offset:2px}
+@media(max-width:1040px){
+ .primary-filters{grid-template-columns:1fr 1fr 1.15fr 44px}
+ #query-filter-field{grid-column:1/5}
+ .advanced-filter-fields{grid-template-columns:1fr 1fr}
+}
+@media(max-width:800px){
+ .primary-filters{grid-template-columns:1fr 1fr 44px}
+ #trimester-filter-field{grid-column:1}
+ #class-filter-field{grid-column:2}
+ #teacher-filter-field{grid-column:1/3}
+ #query-filter-field{grid-column:1/3}
+ .primary-filters>.reset-filter{grid-column:3;grid-row:1}
+ .btn,.nav-button,.section-nav-button,.advanced-filters summary,.active-filter-chip,select,input[type="text"],input[type="search"],input[type="date"],input[type="number"]{min-height:40px}
+ .top-actions .btn{font-size:11px;padding:8px 10px}
+ .filter-foot,.setting-note,.card-foot{font-size:11.5px;line-height:1.55}
+ .kpi-bottom{font-size:10.5px}
+ .table-wrap.has-overflow::before{font-size:11.5px}
+ .weekly-history-table th:nth-child(2),.weekly-history-table td:nth-child(2),.weekly-history-table th:nth-child(3),.weekly-history-table td:nth-child(3),.weekly-history-table th:nth-child(5),.weekly-history-table td:nth-child(5){display:none}
+ .weekly-alert-table th:nth-child(2),.weekly-alert-table td:nth-child(2),.weekly-alert-table th:nth-child(5),.weekly-alert-table td:nth-child(5){display:none}
+ .weekly-unassessed-table th:nth-child(3),.weekly-unassessed-table td:nth-child(3){display:none}
+}
+@media(max-width:600px){
+ .primary-filters{grid-template-columns:1fr 44px}
+ #trimester-filter-field,#class-filter-field,#teacher-filter-field,#query-filter-field{grid-column:1/3}
+ .primary-filters>.reset-filter{grid-column:2;grid-row:1}
+ .filter-controls-row{align-items:stretch;flex-direction:column}
+ .advanced-filters{width:100%}
+ .advanced-filters summary{width:100%;justify-content:center}
+ .advanced-filter-fields{grid-template-columns:1fr}
+ .active-filters{width:100%}
+ .active-filter-chip{max-width:100%;min-height:40px}
+}
+@media(max-width:490px){
+ .btn,.nav-button,.section-nav-button,.advanced-filters summary,.active-filter-chip,select,input[type="text"],input[type="search"],input[type="date"],input[type="number"]{min-height:44px}
+ .field label{font-size:11.5px}
+ .notice{font-size:11.5px;line-height:1.6}
+ .mini-metric span{font-size:10.5px}
+ .filter-foot{font-size:11.5px}
+}
+@media(max-width:390px){
+ .active-filter-chip{width:100%;justify-content:space-between}
+ .top-actions{flex-wrap:wrap;justify-content:flex-end}
+}
+@media print{.filter-controls-row{display:none!important}}
