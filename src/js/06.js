@@ -56,14 +56,14 @@ async function parseTeacherReport(file,prefix){
  const records=[],modalityIssues=[];
  for(const row of matrix.slice(headAt+1)){
   const professor=pick(row,'NOME PROFESSOR'),componente=pick(row,'COMPONENTE'),turma=pick(row,'TURMA'),cod=pick(row,'CODIGO TURMA');if([professor,componente,turma,cod].some(v=>!v||v==='-'))continue;
-  const shortClass=turma.split(/\s+-\s+/)[0].trim(),classNorm=nh(shortClass),compNorm=nh(componente),turno=pick(row,'TURNO'),turnNorm=nh(turno),isInt=/(^| )INT( |$)/.test(classNorm),isReg=/(^| )REG( |$)/.test(classNorm);
+  const shortClass=extractShortClass(turma),classNorm=nh(shortClass),compNorm=nh(componente),turno=pick(row,'TURNO'),turnNorm=nh(turno),isInt=/(^| )INT( |$)/.test(classNorm),isReg=/(^| )REG( |$)/.test(classNorm);
   if(isInt===isReg)modalityIssues.push(`${shortClass}: informe REG ou INT no nome da turma.`);else if(isInt&&turnNorm!=='INTEGRAL')modalityIssues.push(`${shortClass}: turma INT precisa estar no turno INTEGRAL (veio “${turno}”).`);else if(isReg&&turnNorm!=='NOITE')modalityIssues.push(`${shortClass}: nesta configuração, turma REG precisa estar no turno NOITE (veio “${turno}”).`);
-  const bucket=classifySchoolBucket(shortClass),unit=compNorm.startsWith('FREQUENCIA')?'dias':'aulas',refKey=`${bucket}|${compNorm}`;
-  if(!Object.hasOwn(DATA.refs,refKey))DATA.refs[refKey]={bucket,component:componente,weekly:null,source:'Componente não localizado na matriz oficial selecionada; carga semanal a definir pela escola.'};
-  const record={professor,componente,turno,cod_turma:cod,turma,ano:'2026',divisao:pick(row,'DIVISAO'),total:pick(row,'TOTAL DE AULAS DADAS'),notas:pick(row,'NOTAS REGISTRADAS'),status:pick(row,'STATUS DA DIVISAO').toUpperCase(),id:`${prefix}${String(records.length).padStart(3,'0')}`,bucket,shortClass,unit,baseComponent:componente,refKey};
+  const profile=classifySchoolProfile(shortClass),bucket=profile.bucket,unit=compNorm.startsWith('FREQUENCIA')?'dias':'aulas',refKey=`${bucket}|${compNorm}`;
+  if(!Object.hasOwn(DATA.refs,refKey))DATA.refs[refKey]={bucket,component:componente,weekly:null,source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUAL:'Componente não localizado na matriz oficial selecionada; carga semanal a definir pela escola.'};
+  const record={professor,componente,turno,cod_turma:cod,turma,ano:'2026',divisao:pick(row,'DIVISAO'),total:pick(row,'TOTAL DE AULAS DADAS'),notas:pick(row,'NOTAS REGISTRADAS'),status:pick(row,'STATUS DA DIVISAO').toUpperCase(),id:`${prefix}${String(records.length).padStart(3,'0')}`,bucket,shortClass,courseKey:profile.courseKey,offer:profile.offer,unit,baseComponent:componente,refKey};
   for(const [m,i] of Object.entries(monthCols))record[m]=row[i]||'-';records.push(record);
  }
  if(!records.length)throw new Error('A planilha foi lida, mas nenhum lançamento válido foi encontrado.');
  if(modalityIssues.length)throw new Error('Modalidade e turno divergentes: '+[...new Set(modalityIssues)].slice(0,5).join(' | '));
- return collapseTeacherRows(records,prefix);
+ const collapsed=collapseTeacherRows(records,prefix);normalizeEmbeddedRows(collapsed);return collapsed;
 }
