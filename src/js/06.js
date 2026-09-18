@@ -5,7 +5,7 @@ function stats(rows){
  const below=comparable.filter(r=>r.balance<0),above=comparable.filter(r=>r.balance>0);
  return {rows,lessons,measured,comparable,below,above,expected:comparable.length?predicted:null,actual:comparable.length?actual:null,balance:comparable.length?actual-predicted:null,ratio:predicted>0?actual/predicted*100:null,missingLoad:measured.filter(r=>r.plan.value===null),missingActual:lessons.filter(r=>r.actual===null),days:rows.filter(r=>r.unit==='dias'),open:rows.filter(r=>r.status!=='FECHADO'),zeroNotes:rows.filter(r=>/^0[.,]0\s*\/\s*30$/.test(r.notas)),shortfall:sum(below,r=>-r.balance),excess:sum(above,r=>r.balance),estimated:comparable.filter(r=>r.plan.kind==='estimated').length,entered:comparable.filter(r=>r.plan.kind==='entered').length,teachers:unique(rows.map(r=>r.professor)),classes:unique(rows.map(r=>r.cod_turma))};
 }
-function baseRows(){const q=normalize(state.query.trim());return modelRows().filter(r=>(!state.stage||stage(r)===state.stage)&&(!state.classId||r.cod_turma===state.classId)&&(!state.teacher||r.professor===state.teacher)&&(!q||normalize(r.professor+' '+r.componente+' '+r.turma+' '+r.cod_turma).includes(q)));}
+function baseRows(){const q=normalize(state.query.trim());return modelRows().filter(r=>(!state.stage||stage(r)===state.stage)&&rowMatchesOfferFilter(r,state.matrixGroup)&&(!state.classId||r.cod_turma===state.classId)&&(!state.teacher||r.professor===state.teacher)&&(!q||normalize(r.professor+' '+r.componente+' '+r.turma+' '+r.cod_turma).includes(q)));}
 function grouped(rows,key){const map=new Map();for(const r of rows){const k=r[key];if(!map.has(k))map.set(k,[]);map.get(k).push(r);}return [...map.entries()].map(([name,rs])=>({name,records:rs,s:stats(rs)}));}
 function groupsTeachers(){let gs=grouped(baseRows(),'professor');if(state.mode==='open')gs=gs.filter(g=>g.s.open.length);if(state.mode==='below')gs=gs.filter(g=>g.s.below.length);if(state.mode==='unmapped')gs=gs.filter(g=>g.s.missingLoad.length||g.s.missingActual.length);if(state.teacherGradeMode==='attention')gs=gs.filter(g=>g.records.some(r=>['none','partial'].includes(r.grade.status)));if(state.teacherGradeMode==='majority')gs=gs.filter(g=>g.records.some(r=>r.grade.status==='majority'));if(state.teacherGradeMode==='unknown')gs=gs.filter(g=>g.records.some(r=>r.grade.status==='unknown'));gs.sort((a,b)=>{if(state.sort==='name')return a.name.localeCompare(b.name,'pt-BR');if(state.sort==='ratio')return (a.s.ratio??Infinity)-(b.s.ratio??Infinity)||a.name.localeCompare(b.name,'pt-BR');if(state.sort==='gap')return b.s.shortfall-a.s.shortfall||a.name.localeCompare(b.name,'pt-BR');return (gradeStats(b.records).none+gradeStats(b.records).partial)-(gradeStats(a.records).none+gradeStats(a.records).partial)||b.s.open.length-a.s.open.length||b.s.shortfall-a.s.shortfall||a.name.localeCompare(b.name,'pt-BR');});return gs;}
 function classSort(a,b){const aa=RAW.find(r=>r.cod_turma===a),bb=RAW.find(r=>r.cod_turma===b);return aa.shortClass.localeCompare(bb.shortClass,'pt-BR',{numeric:true});}
@@ -14,7 +14,10 @@ function syncFilterOptions(){
  const triSel=document.getElementById('trimester-filter');if(triSel)triSel.value=state.trimester;
  document.getElementById('stage-filter').value=state.stage;
  const curRaw=getActiveRaw(),curResolved=curRaw.map(r=>({...r,professor:responsibleTeacher(r)}));
- const allowed=curResolved.filter(r=>!state.stage||stage(r)===state.stage);
+ const stageAllowed=curResolved.filter(r=>!state.stage||stage(r)===state.stage),matrixItems=offerFilterOptions(stageAllowed),matrixSel=document.getElementById('matrix-filter');
+ if(state.matrixGroup&&!matrixItems.some(([v])=>v===state.matrixGroup))state.matrixGroup='';
+ if(matrixSel)matrixSel.innerHTML=options(matrixItems,state.matrixGroup,'Todas as ofertas / matrizes');
+ const allowed=stageAllowed.filter(r=>rowMatchesOfferFilter(r,state.matrixGroup));
  const ids=unique(allowed.map(r=>r.cod_turma)).sort(classSort);
  if(state.classId&&!ids.includes(state.classId))state.classId='';
  document.getElementById('class-filter').innerHTML=options(ids.map(id=>[id,curResolved.find(r=>r.cod_turma===id).shortClass]),state.classId,'Todas as turmas');
