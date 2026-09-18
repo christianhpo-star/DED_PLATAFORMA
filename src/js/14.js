@@ -32,9 +32,10 @@ function consolidatedPage(){
 'use strict';
 document.addEventListener('change',async e=>{
  const el=e.target;
- if(['stage-filter','class-filter','teacher-filter'].includes(el.id))state.gradePage=0;
+ if(['stage-filter','matrix-filter','class-filter','teacher-filter'].includes(el.id))state.gradePage=0;
  if(el.id==='trimester-filter'){state.trimester=el.value;RAW=getActiveRaw();syncFilterOptions();render();}
  else if(el.id==='stage-filter'){state.stage=el.value;state.classId='';state.teacher='';state.expanded.clear();syncFilterOptions();render();}
+ else if(el.id==='matrix-filter'){state.matrixGroup=el.value;state.classId='';state.teacher='';state.expanded.clear();syncFilterOptions();render();}
  else if(el.id==='class-filter'){state.classId=el.value;state.expanded.clear();syncFilterOptions();render();}
  else if(el.id==='teacher-filter'){state.teacher=el.value;state.expanded.clear();render();}
  else if(el.id==='grade-mode'){state.gradeMode=el.value;state.gradePage=0;render();}

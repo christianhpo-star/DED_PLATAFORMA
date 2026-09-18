@@ -30,7 +30,7 @@ document.addEventListener('click',e=>{
  const el=e.target.closest('[data-action]');if(!el)return;const a=el.dataset.action;
  if(a==='nav'){if(el.dataset.page==='teachers'){state.mode='all';state.teacherGradeMode='all';}switchPage(el.dataset.page);}
  else if(a==='trimester'){state.trimester=el.dataset.trimester;RAW=getActiveRaw();if(document.getElementById('trimester-filter'))document.getElementById('trimester-filter').value=state.trimester;syncFilterOptions();render();}
- else if(a==='clear'){state.stage='';state.classId='';state.teacher='';state.query='';state.mode='all';state.gradeMode='all';state.gradePage=0;state.teacherGradeMode='all';state.expanded.clear();syncFilterOptions();render();}
+ else if(a==='clear'){state.stage='';state.matrixGroup='';state.classId='';state.teacher='';state.query='';state.mode='all';state.gradeMode='all';state.gradePage=0;state.teacherGradeMode='all';state.expanded.clear();syncFilterOptions();render();}
  else if(a==='print')window.print();
  else if(a==='print-all-teachers')printAllTeachers();
  else if(a==='export')exportCSV();

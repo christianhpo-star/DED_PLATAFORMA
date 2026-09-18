@@ -11,6 +11,8 @@ const js = files.map(f => fs.readFileSync(path.join(jsDir,f),'utf8')).join('\n')
 new Function(js); // syntax-only compile; does not execute DOM code
 
 const unsafe = [
+  'EM_INT_2_AUT|AUTOMACAO INDUSTRIAL III',
+  'EM_INT_2_AUT|AUTOMACAO INDUSTRIAL IV',
   'EM_INT_2_FAB|FABRICACAO MECANICA III',
   'EM_INT_2_FAB|FABRICACAO MECANICA IV',
   'EM_INT_2_SER|SISTEMAS DE ENERGIA RENOVAVEL III',
@@ -22,12 +24,19 @@ assert(js.includes('comparable:rr.unit===\'aulas\'&&actual!==null&&plan.value!==
 for (const fn of ['meter','kpis','consolidatedPage']) assert(new RegExp(`function\\s+${fn}\\s*\\(`).test(js), `Função obrigatória ausente: ${fn}`);
 assert(js.includes("turma + componente forma um único diário lógico"), 'Regra de consolidação por turma + componente deve permanecer documentada na interface.');
 assert(js.includes("RESPONSÁVEL A CONFIRMAR"), 'Duplicidade simultânea de docentes deve permanecer pendente de confirmação.');
+assert(js.includes('function extractShortClass'), 'Importador deve preservar hífens internos do nome da oferta técnica.');
+assert(js.includes("parts.slice(0,-1).join(' - ')"), 'Remoção do endereço deve preservar segmentos internos separados por hífen.');
+assert(js.includes('QUIMICA_PRODUCAO_INDUSTRIAL'), 'Curso técnico Química/Produção Industrial deve ser classificável.');
+assert(js.includes('DESENVOLVIMENTO_SISTEMAS'), 'Curso técnico Desenvolvimento de Sistemas deve ser classificável.');
+assert(js.includes('MATEMATICA APLICADA EM LINGUA ESTRANGEIRA'), 'Componentes bilíngues oficiais devem ser reconhecidos.');
+assert(js.includes("source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUAL"), 'Carga bilíngue ausente deve permanecer sem inferência automática.');
 
 const html = fs.readFileSync(indexPath,'utf8');
 const scripts = [...html.matchAll(/<script src="js\/(\d{2})\.js"><\/script>/g)].map(m=>m[1]);
 assert.deepStrictEqual(scripts, Array.from({length:14},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 14 módulos JS em ordem.');
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
 assert.deepStrictEqual(styles, ['01','02','03','04'], 'index.html deve carregar os quatro módulos CSS.');
+assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
 const sourceMatch = html.match(/<script id="source-data" type="application\/json">([\s\S]*?)<\/script>/);
 assert(sourceMatch, 'source-data ausente.');
 const data = JSON.parse(sourceMatch[1]);
@@ -36,7 +45,7 @@ assert.strictEqual(data.raw_t1.length,0,'Template público não pode conter linh
 assert.strictEqual(data.raw_t3.length,0,'Template público não pode conter linhas do 3º trimestre.');
 assert.strictEqual(data.school,'','Template público não pode vir identificado com uma escola.');
 
-const sensitive = [/H[IÍ]LTON ROCHA/i,/000353/,/CRISTIANO MACHADO/i,/ANA CECILIA SANTOS GOMES/i,/VAMBERTO/i];
+const sensitive = [/H[IÍ]LTON ROCHA/i,/MARIA LUIZA MIRANDA BASTOS/i,/000353/,/CRISTIANO MACHADO/i,/ANA CECILIA SANTOS GOMES/i,/VAMBERTO/i];
 const publicSource = html + '\n' + js + '\n' + fs.readdirSync(path.join(root,'src','css')).sort().map(f=>fs.readFileSync(path.join(root,'src','css',f),'utf8')).join('\n');
 for (const rx of sensitive) assert(!rx.test(publicSource), `Dado identificável encontrado no template: ${rx}`);
 

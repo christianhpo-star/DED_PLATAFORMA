@@ -5,7 +5,7 @@ function stats(rows){
  const below=comparable.filter(r=>r.balance<0),above=comparable.filter(r=>r.balance>0);
  return {rows,lessons,measured,comparable,below,above,expected:comparable.length?predicted:null,actual:comparable.length?actual:null,balance:comparable.length?actual-predicted:null,ratio:predicted>0?actual/predicted*100:null,missingLoad:measured.filter(r=>r.plan.value===null),missingActual:lessons.filter(r=>r.actual===null),days:rows.filter(r=>r.unit==='dias'),open:rows.filter(r=>r.status!=='FECHADO'),zeroNotes:rows.filter(r=>/^0[.,]0\s*\/\s*30$/.test(r.notas)),shortfall:sum(below,r=>-r.balance),excess:sum(above,r=>r.balance),estimated:comparable.filter(r=>r.plan.kind==='estimated').length,entered:comparable.filter(r=>r.plan.kind==='entered').length,teachers:unique(rows.map(r=>r.professor)),classes:unique(rows.map(r=>r.cod_turma))};
 }
-function baseRows(){const q=normalize(state.query.trim());return modelRows().filter(r=>(!state.stage||stage(r)===state.stage)&&(!state.classId||r.cod_turma===state.classId)&&(!state.teacher||r.professor===state.teacher)&&(!q||normalize(r.professor+' '+r.componente+' '+r.turma+' '+r.cod_turma).includes(q)));}
+function baseRows(){const q=normalize(state.query.trim());return modelRows().filter(r=>(!state.stage||stage(r)===state.stage)&&rowMatchesOfferFilter(r,state.matrixGroup)&&(!state.classId||r.cod_turma===state.classId)&&(!state.teacher||r.professor===state.teacher)&&(!q||normalize(r.professor+' '+r.componente+' '+r.turma+' '+r.cod_turma).includes(q)));}
 function grouped(rows,key){const map=new Map();for(const r of rows){const k=r[key];if(!map.has(k))map.set(k,[]);map.get(k).push(r);}return [...map.entries()].map(([name,rs])=>({name,records:rs,s:stats(rs)}));}
 function groupsTeachers(){let gs=grouped(baseRows(),'professor');if(state.mode==='open')gs=gs.filter(g=>g.s.open.length);if(state.mode==='below')gs=gs.filter(g=>g.s.below.length);if(state.mode==='unmapped')gs=gs.filter(g=>g.s.missingLoad.length||g.s.missingActual.length);if(state.teacherGradeMode==='attention')gs=gs.filter(g=>g.records.some(r=>['none','partial'].includes(r.grade.status)));if(state.teacherGradeMode==='majority')gs=gs.filter(g=>g.records.some(r=>r.grade.status==='majority'));if(state.teacherGradeMode==='unknown')gs=gs.filter(g=>g.records.some(r=>r.grade.status==='unknown'));gs.sort((a,b)=>{if(state.sort==='name')return a.name.localeCompare(b.name,'pt-BR');if(state.sort==='ratio')return (a.s.ratio??Infinity)-(b.s.ratio??Infinity)||a.name.localeCompare(b.name,'pt-BR');if(state.sort==='gap')return b.s.shortfall-a.s.shortfall||a.name.localeCompare(b.name,'pt-BR');return (gradeStats(b.records).none+gradeStats(b.records).partial)-(gradeStats(a.records).none+gradeStats(a.records).partial)||b.s.open.length-a.s.open.length||b.s.shortfall-a.s.shortfall||a.name.localeCompare(b.name,'pt-BR');});return gs;}
 function classSort(a,b){const aa=RAW.find(r=>r.cod_turma===a),bb=RAW.find(r=>r.cod_turma===b);return aa.shortClass.localeCompare(bb.shortClass,'pt-BR',{numeric:true});}
@@ -14,7 +14,10 @@ function syncFilterOptions(){
  const triSel=document.getElementById('trimester-filter');if(triSel)triSel.value=state.trimester;
  document.getElementById('stage-filter').value=state.stage;
  const curRaw=getActiveRaw(),curResolved=curRaw.map(r=>({...r,professor:responsibleTeacher(r)}));
- const allowed=curResolved.filter(r=>!state.stage||stage(r)===state.stage);
+ const stageAllowed=curResolved.filter(r=>!state.stage||stage(r)===state.stage),matrixItems=offerFilterOptions(stageAllowed),matrixSel=document.getElementById('matrix-filter');
+ if(state.matrixGroup&&!matrixItems.some(([v])=>v===state.matrixGroup))state.matrixGroup='';
+ if(matrixSel)matrixSel.innerHTML=options(matrixItems,state.matrixGroup,'Todas as ofertas / matrizes');
+ const allowed=stageAllowed.filter(r=>rowMatchesOfferFilter(r,state.matrixGroup));
  const ids=unique(allowed.map(r=>r.cod_turma)).sort(classSort);
  if(state.classId&&!ids.includes(state.classId))state.classId='';
  document.getElementById('class-filter').innerHTML=options(ids.map(id=>[id,curResolved.find(r=>r.cod_turma===id).shortClass]),state.classId,'Todas as turmas');
@@ -56,14 +59,14 @@ async function parseTeacherReport(file,prefix){
  const records=[],modalityIssues=[];
  for(const row of matrix.slice(headAt+1)){
   const professor=pick(row,'NOME PROFESSOR'),componente=pick(row,'COMPONENTE'),turma=pick(row,'TURMA'),cod=pick(row,'CODIGO TURMA');if([professor,componente,turma,cod].some(v=>!v||v==='-'))continue;
-  const shortClass=turma.split(/\s+-\s+/)[0].trim(),classNorm=nh(shortClass),compNorm=nh(componente),turno=pick(row,'TURNO'),turnNorm=nh(turno),isInt=/(^| )INT( |$)/.test(classNorm),isReg=/(^| )REG( |$)/.test(classNorm);
+  const shortClass=extractShortClass(turma),classNorm=nh(shortClass),compNorm=nh(componente),turno=pick(row,'TURNO'),turnNorm=nh(turno),isInt=/(^| )INT( |$)/.test(classNorm),isReg=/(^| )REG( |$)/.test(classNorm);
   if(isInt===isReg)modalityIssues.push(`${shortClass}: informe REG ou INT no nome da turma.`);else if(isInt&&turnNorm!=='INTEGRAL')modalityIssues.push(`${shortClass}: turma INT precisa estar no turno INTEGRAL (veio “${turno}”).`);else if(isReg&&turnNorm!=='NOITE')modalityIssues.push(`${shortClass}: nesta configuração, turma REG precisa estar no turno NOITE (veio “${turno}”).`);
-  const bucket=classifySchoolBucket(shortClass),unit=compNorm.startsWith('FREQUENCIA')?'dias':'aulas',refKey=`${bucket}|${compNorm}`;
-  if(!Object.hasOwn(DATA.refs,refKey))DATA.refs[refKey]={bucket,component:componente,weekly:null,source:'Componente não localizado na matriz oficial selecionada; carga semanal a definir pela escola.'};
-  const record={professor,componente,turno,cod_turma:cod,turma,ano:'2026',divisao:pick(row,'DIVISAO'),total:pick(row,'TOTAL DE AULAS DADAS'),notas:pick(row,'NOTAS REGISTRADAS'),status:pick(row,'STATUS DA DIVISAO').toUpperCase(),id:`${prefix}${String(records.length).padStart(3,'0')}`,bucket,shortClass,unit,baseComponent:componente,refKey};
+  const profile=classifySchoolProfile(shortClass),bucket=profile.bucket,unit=compNorm.startsWith('FREQUENCIA')?'dias':'aulas',refKey=`${bucket}|${compNorm}`;
+  if(!Object.hasOwn(DATA.refs,refKey))DATA.refs[refKey]={bucket,component:componente,weekly:null,source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUAL:'Componente não localizado na matriz oficial selecionada; carga semanal a definir pela escola.'};
+  const record={professor,componente,turno,cod_turma:cod,turma,ano:'2026',divisao:pick(row,'DIVISAO'),total:pick(row,'TOTAL DE AULAS DADAS'),notas:pick(row,'NOTAS REGISTRADAS'),status:pick(row,'STATUS DA DIVISAO').toUpperCase(),id:`${prefix}${String(records.length).padStart(3,'0')}`,bucket,shortClass,courseKey:profile.courseKey,offer:profile.offer,unit,baseComponent:componente,refKey};
   for(const [m,i] of Object.entries(monthCols))record[m]=row[i]||'-';records.push(record);
  }
  if(!records.length)throw new Error('A planilha foi lida, mas nenhum lançamento válido foi encontrado.');
  if(modalityIssues.length)throw new Error('Modalidade e turno divergentes: '+[...new Set(modalityIssues)].slice(0,5).join(' | '));
- return collapseTeacherRows(records,prefix);
+ const collapsed=collapseTeacherRows(records,prefix);normalizeEmbeddedRows(collapsed);return collapsed;
 }
