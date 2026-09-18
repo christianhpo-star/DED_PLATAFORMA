@@ -23,7 +23,7 @@ function validateDataBackup(raw){
  if(raw.version!==DATA_BACKUP_VERSION)throw new Error('Versão de backup incompatível. Esperado: '+DATA_BACKUP_VERSION+'.');
  if(raw.datasetId!==DATA.datasetId)throw new Error('Este backup pertence a outro conjunto de dados.');
  if(!raw.dataStore||typeof raw.dataStore!=='object')throw new Error('O backup não contém a seção dataStore.');
- const store={t1:validateBackupRows(raw.dataStore.t1,'1º trimestre'),t2:validateBackupRows(raw.dataStore.t2,'2º trimestre'),weeklySnapshots:Array.isArray(raw.dataStore.weeklySnapshots)?raw.dataStore.weeklySnapshots:[]};
+ const store={t1:validateBackupRows(raw.dataStore.t1,'1º trimestre'),t2:validateBackupRows(raw.dataStore.t2,'2º trimestre'),weeklySnapshots:Array.isArray(raw.dataStore.weeklySnapshots)?raw.dataStore.weeklySnapshots:[],importMeta:normalizeImportMeta(raw.dataStore.importMeta)};
  if(store.weeklySnapshots.length>80)throw new Error('O backup contém snapshots semanais acima do limite esperado.');
  const seen=new Set();
  for(const [i,s] of store.weeklySnapshots.entries()){

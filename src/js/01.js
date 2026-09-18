@@ -40,9 +40,16 @@ for(const [key,weekly] of Object.entries(OFFICIAL_WEEKLY)){const [bucket,...part
 // As planilhas importadas ficam somente neste navegador. A base incorporada ao HTML permanece como cópia de segurança.
 const INSTANCE_SCOPE=(location.pathname||DATA.datasetId||'template').replace(/[^a-z0-9_-]+/gi,'_');
 const DATA_STORE_KEY=`ded-em-foco:${DATA.datasetId}:${INSTANCE_SCOPE}:planilhas-v1`;
-let dataStore={t1:null,t2:null,weeklySnapshots:[]};
-try{const embeddedStore=JSON.parse(document.getElementById('embedded-data-store').textContent);if(embeddedStore&&typeof embeddedStore==='object')dataStore={t1:Array.isArray(embeddedStore.t1)?embeddedStore.t1:null,t2:Array.isArray(embeddedStore.t2)?embeddedStore.t2:null,weeklySnapshots:Array.isArray(embeddedStore.weeklySnapshots)?embeddedStore.weeklySnapshots:[]};}catch(e){}
-try{const saved=JSON.parse(localStorage.getItem(DATA_STORE_KEY)||'null');if(saved&&typeof saved==='object'){dataStore={t1:Array.isArray(saved.t1)?saved.t1:null,t2:Array.isArray(saved.t2)?saved.t2:null,weeklySnapshots:Array.isArray(saved.weeklySnapshots)?saved.weeklySnapshots:[]};}}catch(e){}
+function normalizeImportMeta(meta){
+ const one=v=>v&&typeof v==='object'?{fileName:String(v.fileName||''),importedAt:Number(v.importedAt)||0,fileModifiedAt:Number(v.fileModifiedAt)||0}:null;
+ return {t1:one(meta?.t1),t2:one(meta?.t2)};
+}
+function normalizeDataStore(store){
+ return {t1:Array.isArray(store?.t1)?store.t1:null,t2:Array.isArray(store?.t2)?store.t2:null,weeklySnapshots:Array.isArray(store?.weeklySnapshots)?store.weeklySnapshots:[],importMeta:normalizeImportMeta(store?.importMeta)};
+}
+let dataStore=normalizeDataStore(null);
+try{const embeddedStore=JSON.parse(document.getElementById('embedded-data-store').textContent);if(embeddedStore&&typeof embeddedStore==='object')dataStore=normalizeDataStore(embeddedStore);}catch(e){}
+try{const saved=JSON.parse(localStorage.getItem(DATA_STORE_KEY)||'null');if(saved&&typeof saved==='object')dataStore=normalizeDataStore(saved);}catch(e){}
 if(dataStore.t1)DATA.raw_t1=dataStore.t1;
 if(dataStore.t2)DATA.raw=dataStore.t2;
 if(dataStore.weeklySnapshots.length)DATA.raw_t3=dataStore.weeklySnapshots[dataStore.weeklySnapshots.length-1].rows;

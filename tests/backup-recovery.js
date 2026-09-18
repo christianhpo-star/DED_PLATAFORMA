@@ -24,6 +24,7 @@ const ctx={
  nextImportPaint:()=>Promise.resolve(),
  safeImportBusy:false,
  normalize:v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),
+ normalizeImportMeta:meta=>({t1:meta?.t1||null,t2:meta?.t2||null}),
  formatDateBR:v=>v,
  btn:()=>'<button></button>',
  icon:()=>'',esc:v=>String(v??''),
@@ -41,10 +42,11 @@ const ctx={
 vm.createContext(ctx);
 vm.runInContext(code,ctx);
 const row={cod_turma:'1',componente:'MATEMATICA',professor:'PROFESSOR TESTE',turma:'1 REG 1',unit:'aulas',total:'10'};
-const valid={version:2,datasetId:'ded-plataforma-template-2026',school:{name:'Escola Teste'},exportedAt:'2026-09-18T12:00:00.000Z',dataStore:{t1:[row],t2:null,weeklySnapshots:[]},refs:{BASE:{weekly:1}}};
+const valid={version:2,datasetId:'ded-plataforma-template-2026',school:{name:'Escola Teste'},exportedAt:'2026-09-18T12:00:00.000Z',dataStore:{t1:[row],t2:null,weeklySnapshots:[],importMeta:{t1:{fileName:'t1.xlsx',importedAt:123,fileModifiedAt:100},t2:null}},refs:{BASE:{weekly:1}}};
 const checked=ctx.validateDataBackup(clone(valid));
 assert.strictEqual(checked.store.t1.length,1,'Backup válido deve preservar T1.');
 assert.strictEqual(checked.datasetId,valid.datasetId,'Dataset validado deve ser preservado.');
+assert.strictEqual(checked.store.importMeta.t1.fileName,'t1.xlsx','Restauração deve preservar metadados de atualidade da base.');
 assert.throws(()=>ctx.validateDataBackup({...clone(valid),version:1}),/Versão de backup incompatível/,'Versão incompatível deve ser rejeitada.');
 assert.throws(()=>ctx.validateDataBackup({...clone(valid),datasetId:'outro'}),/outro conjunto de dados/,'Dataset diferente deve ser rejeitado.');
 const noRefs=clone(valid);delete noRefs.refs;

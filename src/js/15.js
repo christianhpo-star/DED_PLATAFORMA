@@ -85,7 +85,7 @@ async function stageImport(file,target,date=''){
   candidateRefs=safeClone(DATA.refs);
  }finally{DATA.refs=refsBefore;}
  setImportStep(3,'Conferindo turmas e componentes','Identificando registros lógicos, referências e conflitos.');await nextImportPaint();
- const candidate={target,date,fileName:file.name,fileSize:file.size,readAt:Date.now(),rows,refs:candidateRefs,replacesExisting:target==='weekly'?dataStore.weeklySnapshots.some(s=>s.date===date):true};
+ const candidate={target,date,fileName:file.name,fileSize:file.size,fileModifiedAt:Number(file.lastModified)||0,readAt:Date.now(),rows,refs:candidateRefs,replacesExisting:target==='weekly'?dataStore.weeklySnapshots.some(s=>s.date===date):true};
  candidate.summary=importSummary(rows,candidateRefs);validateImportCandidate(candidate);safeImportStage=candidate;
  setImportStep(4,'Preparando prévia','Nenhum dado foi aplicado; revise o resumo antes de confirmar.');await nextImportPaint();
  return buildImportPreview(candidate);
@@ -108,7 +108,7 @@ function createLocalRestorePoint(reason){
 }
 function readLocalRestorePoint(){try{const p=JSON.parse(localStorage.getItem(SAFE_IMPORT_RESTORE_KEY)||'null');return p&&p.version===1&&p.dataStore?p:null;}catch(e){return null;}}
 function hydrateDataStore(store,refs){
- dataStore={t1:Array.isArray(store?.t1)?store.t1:null,t2:Array.isArray(store?.t2)?store.t2:null,weeklySnapshots:Array.isArray(store?.weeklySnapshots)?store.weeklySnapshots:[]};
+ dataStore=normalizeDataStore(store);
  if(refs&&typeof refs==='object')DATA.refs=safeClone(refs);
  DATA.raw_t1=dataStore.t1===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t1||[]):dataStore.t1;DATA.raw=dataStore.t2===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t2||[]):dataStore.t2;recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
  normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();
@@ -120,10 +120,10 @@ function commitImport(candidate=safeImportStage){
  const beforeStore=safeClone(dataStore),beforeRefs=safeClone(DATA.refs);let previousRestore=null;try{previousRestore=localStorage.getItem(SAFE_IMPORT_RESTORE_KEY);}catch(e){}
  createLocalRestorePoint(`Antes de ${importTargetLabel(candidate)} · ${candidate.fileName}`);
  DATA.refs=safeClone(candidate.refs);
- if(candidate.target==='1')dataStore.t1=safeClone(candidate.rows);
- else if(candidate.target==='2')dataStore.t2=safeClone(candidate.rows);
+ if(candidate.target==='1'){dataStore.t1=safeClone(candidate.rows);dataStore.importMeta.t1={fileName:candidate.fileName,importedAt:Date.now(),fileModifiedAt:candidate.fileModifiedAt};}
+ else if(candidate.target==='2'){dataStore.t2=safeClone(candidate.rows);dataStore.importMeta.t2={fileName:candidate.fileName,importedAt:Date.now(),fileModifiedAt:candidate.fileModifiedAt};}
  else{
-  const snapshot={date:candidate.date,intervalDays:0,daysToDate:officialDaysThrough(candidate.date),fileName:candidate.fileName,importedAt:Date.now(),rows:safeClone(candidate.rows)};
+  const snapshot={date:candidate.date,intervalDays:0,daysToDate:officialDaysThrough(candidate.date),fileName:candidate.fileName,fileModifiedAt:candidate.fileModifiedAt,importedAt:Date.now(),rows:safeClone(candidate.rows)};
   const same=dataStore.weeklySnapshots.findIndex(s=>s.date===candidate.date);if(same>=0)dataStore.weeklySnapshots[same]=snapshot;else dataStore.weeklySnapshots.push(snapshot);
  }
  hydrateDataStore(dataStore,DATA.refs);

@@ -60,7 +60,7 @@ window.addEventListener('afterprint',()=>{if(state.printAllGrades){state.printAl
 window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(pageMeta[p]&&p!==state.page)switchPage(p);});
 function initializeDedApp(){
  document.querySelectorAll('[data-icon]').forEach(e=>e.innerHTML=icon(e.dataset.icon));
- updateSchoolUI();syncFilterOptions();switchPage(location.hash.slice(1)||'overview',false);if(loadWarning)toast(loadWarning);
+ RAW=getActiveRaw();updateSchoolUI();syncFilterOptions();switchPage(location.hash.slice(1)||'overview',false);if(loadWarning)toast(loadWarning);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeDedApp,{once:true});else initializeDedApp();
 // Read-only diagnostic API for reproducible checks; no external connections.

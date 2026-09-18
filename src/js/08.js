@@ -37,8 +37,12 @@ function notice(s,compact=false){let text='';if(s.comparable.length)text=`<stron
 window.exportConsolidatedCsv = function(){
  const cons = (DATA.consolidated || []).map(r=>({...r,professor:responsibleTeacher(r)}));
  if(!cons.length) return;
- const headers = ['Docente Atual','Turma','Código Turma','Componente','Turno','Aulas 1º Tri','Aulas 2º Tri','Total Acumulado','Status 1º Tri','Status 2º Tri','Notas 1º Tri','Notas 2º Tri','Situação no Ano'];
+ const temporal=temporalExportContext();
+ const headers = ['Contexto temporal','Natureza da visão','Origem temporal','Docente Atual','Turma','Código Turma','Componente','Turno','Aulas 1º Tri','Aulas 2º Tri','Total Acumulado','Status 1º Tri','Status 2º Tri','Notas 1º Tri','Notas 2º Tri','Situação no Ano'];
  const rows = cons.map(r => [
+  `"${temporal.title}"`,
+  `"${temporal.nature}"`,
+  `"${temporal.detail}"`,
   `"${r.professor}"`,
   `"${r.turma}"`,
   `"${r.cod_turma}"`,
