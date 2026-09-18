@@ -32,7 +32,8 @@ function validateDataBackup(raw){
   if(seen.has(s.date))throw new Error('O backup contém mais de um snapshot na data '+formatDateBR(s.date)+'.');
   seen.add(s.date);validateBackupRows(s.rows,'Snapshot de '+formatDateBR(s.date));
  }
- const refs=raw.refs&&typeof raw.refs==='object'&&!Array.isArray(raw.refs)?safeClone(raw.refs):{};
+ if(!raw.refs||typeof raw.refs!=='object'||Array.isArray(raw.refs))throw new Error('O backup não contém as referências necessárias para reconstruir as bases.');
+ const refs=safeClone(raw.refs);
  return {version:raw.version,datasetId:raw.datasetId,school:raw.school&&typeof raw.school==='object'?raw.school:{},exportedAt:raw.exportedAt||'',store,refs};
 }
 function backupRestoreSummary(c){
