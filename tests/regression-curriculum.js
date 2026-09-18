@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const jsDir = path.join(root, 'src', 'js');
 const indexPath = path.join(root, 'src', 'index.html');
 const files = fs.readdirSync(jsDir).filter(f => /^\d{2}\.js$/.test(f)).sort();
-assert.deepStrictEqual(files, Array.from({length:16},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..16.');
+assert.deepStrictEqual(files, Array.from({length:17},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..17.');
 const js = files.map(f => fs.readFileSync(path.join(jsDir,f),'utf8')).join('\n');
 new Function(js); // syntax-only compile; does not execute DOM code
 
@@ -33,9 +33,9 @@ assert(js.includes("source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUA
 
 const html = fs.readFileSync(indexPath,'utf8');
 const scripts = [...html.matchAll(/<script src="js\/(\d{2})\.js"><\/script>/g)].map(m=>m[1]);
-assert.deepStrictEqual(scripts, Array.from({length:16},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 16 módulos JS em ordem.');
+assert.deepStrictEqual(scripts, Array.from({length:17},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 17 módulos JS em ordem.');
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
-assert.deepStrictEqual(styles, ['01','02','03','04','05'], 'index.html deve carregar os cinco módulos CSS.');
+assert.deepStrictEqual(styles, ['01','02','03','04','05','06'], 'index.html deve carregar os seis módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
 assert(html.includes('Desenvolvido por Christian Oliveira'),'Crédito de desenvolvimento deve permanecer no rodapé.');
 const importSafety = fs.readFileSync(path.join(jsDir,'15.js'),'utf8');
