@@ -7,4 +7,4 @@
 .data-context-copy strong{font-size:12px;line-height:1.45}
 .data-context-copy small{font-size:10px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
 @media(max-width:800px){.data-context{margin-top:-5px}.data-context-copy small{font-size:10.5px}}
-@media print{.data-context{box-shadow:none;break-inside:avoid;margin:0 0 13px;padding:9px 11px}.data-context-copy>span{font-size:8px}.data-context-copy strong{font-size:10px}.data-context-copy small{font-size:8px}}
+@media print{body.weekly-printing .data-context{display:none!important}.data-context{box-shadow:none;break-inside:avoid;margin:0 0 13px;padding:9px 11px}.data-context-copy>span{font-size:8px}.data-context-copy strong{font-size:10px}.data-context-copy small{font-size:8px}}
