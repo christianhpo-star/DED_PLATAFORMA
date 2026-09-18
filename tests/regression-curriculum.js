@@ -37,6 +37,7 @@ assert.deepStrictEqual(scripts, Array.from({length:14},(_,i)=>String(i+1).padSta
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
 assert.deepStrictEqual(styles, ['01','02','03','04'], 'index.html deve carregar os quatro módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
+assert(html.includes('Desenvolvido por Christian Oliveira'),'Crédito de desenvolvimento deve permanecer no rodapé.');
 const matrixPath = path.join(root,'data','matrizes','emti_2026_anonimizada.json');
 assert(fs.existsSync(matrixPath),'Matriz EMTI anonimizada deve permanecer versionada.');
 const matrix = JSON.parse(fs.readFileSync(matrixPath,'utf8'));
