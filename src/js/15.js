@@ -19,7 +19,7 @@ function setImportStatus(kind,titleText,detail='',actionHtml=''){
 function clearImportStatus(){const host=document.getElementById('import-status');if(host)host.innerHTML='';}
 function setDataOperationBusy(busy){
  safeImportBusy=!!busy;
- document.querySelectorAll('#replace-t1-file,#replace-t2-file,#weekly-file,#restore-data-backup-file').forEach(el=>{el.disabled=!!busy;el.setAttribute('aria-busy',busy?'true':'false');});
+ document.querySelectorAll('#replace-t1-file,#replace-t2-file,#weekly-file,#restore-data-backup-file,#manage-weekly-file').forEach(el=>{el.disabled=!!busy;el.setAttribute('aria-busy',busy?'true':'false');});
  document.querySelectorAll('[data-action="restore-data-backup"]').forEach(el=>{el.disabled=!!busy;});
 }
 function setImportStep(step,titleText,detail=''){setImportStatus('working',titleText,`Etapa ${step} de 6 · ${detail}`);}
