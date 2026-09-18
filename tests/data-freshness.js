@@ -55,6 +55,10 @@ assert(source15.includes('fileModifiedAt:Number(file.lastModified)||0'),'Importa
 assert(source15.includes('dataStore.importMeta.t1')&&source15.includes('dataStore.importMeta.t2'),'T1/T2 devem registrar metadados de importação.');
 const source13=fs.readFileSync(path.join(__dirname,'..','src','js','13.js'),'utf8');
 assert(source13.includes("'Contexto temporal','Natureza da visão','Origem temporal'"),'CSV deve carregar o contexto temporal.');
+assert(source13.includes("if(state.page==='weekly')return exportWeeklyCSV()"),'Exportação da página semanal deve usar diferenças entre extrações, não a base acumulada.');
+assert(source13.includes("'Antes','Agora','Novos lançamentos','Previsto no intervalo'"),'CSV semanal deve declarar a natureza dos valores exportados.');
+const source14=fs.readFileSync(path.join(__dirname,'..','src','js','14.js'),'utf8');
+assert(source14.includes('RAW=getActiveRaw();updateSchoolUI()'),'Bootstrap deve alinhar a base ativa ao período inicial dinâmico.');
 const html=fs.readFileSync(path.join(__dirname,'..','src','index.html'),'utf8');
 assert(html.includes('id="data-context"'),'Contexto temporal deve ter região persistente na interface.');
 
