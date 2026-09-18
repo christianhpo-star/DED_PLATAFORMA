@@ -12,6 +12,7 @@ const ctx={
  console,
  DATA:{datasetId:'ded-plataforma-template-2026',refs:{BASE:{weekly:1}}},
  dataStore:{t1:null,t2:null,weeklySnapshots:[]},
+ RAW:[],
  state:{trimester:'2'},
  schoolProfile:()=>({name:'Escola Teste'}),
  schoolFileStem:()=>'teste',
