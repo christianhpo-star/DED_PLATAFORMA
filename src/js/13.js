@@ -69,9 +69,9 @@ document.addEventListener('click',e=>{
  else if(a==='save-expected')saveExpected(el.dataset.id);
  else if(a==='clear-expected'){delete cfg.expected[el.dataset.id];if(saveConfig())toast('A linha voltou a usar a refer\u00eancia semanal, quando dispon\u00edvel.');document.getElementById('record-dialog').close();render();}
  else if(a==='save-school'){const name=document.getElementById('school-name')?.value.trim()||'';if(!name){toast('Informe o nome da escola.');document.getElementById('school-name')?.focus();return;}cfg.school={name,code:document.getElementById('school-code')?.value.trim()||'',city:document.getElementById('school-city')?.value.trim()||'',sre:document.getElementById('school-sre')?.value.trim()||'',responsible:document.getElementById('school-responsible')?.value.trim()||''};if(saveConfig())toast('Identificação da escola salva.');render();}
- else if(a==='calendar-remove'){const d=document.getElementById('calendar-remove-date')?.value||'';if(!d){toast('Selecione a data a excluir.');return;}cfg.calendarRemoved=[...new Set([...(cfg.calendarRemoved||[]),d])].sort();cfg.calendarAdded=(cfg.calendarAdded||[]).filter(x=>x!==d);recalcSnapshotCalendar();if(saveConfig())toast('Data excluída do calendário efetivo.');render();}
- else if(a==='calendar-add'){const d=document.getElementById('calendar-add-date')?.value||'';if(!d){toast('Selecione a data de recomposição.');return;}cfg.calendarAdded=[...new Set([...(cfg.calendarAdded||[]),d])].sort();cfg.calendarRemoved=(cfg.calendarRemoved||[]).filter(x=>x!==d);recalcSnapshotCalendar();if(saveConfig())toast('Data adicionada ao calendário efetivo.');render();}
- else if(a==='calendar-clear'){cfg.calendarAdded=[];cfg.calendarRemoved=[];recalcSnapshotCalendar();if(saveConfig())toast('Ajustes locais do calendário removidos.');render();}
+ else if(a==='calendar-remove')requestCalendarAdjustment('remove');
+ else if(a==='calendar-add')requestCalendarAdjustment('add');
+ else if(a==='calendar-clear')requestCalendarReset();
  else if(a==='apply-days'){const input=document.getElementById('reference-days');if(!input.reportValidity())return;const v=Number(input.value);if(!integer(v)||v<1||v>200){toast('Use um n\u00famero inteiro de dias entre 1 e 200.');return;}cfg.days=v;if(saveConfig())toast('Dias aplicados. Todas as estimativas foram recalculadas.');render();}
  else if(a==='save-html')saveHTML();
  else if(a==='export-config')exportConfig();
