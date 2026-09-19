@@ -68,19 +68,37 @@ const badge = (text,type='')=>`<span class="status ${type}"><span class="status-
 const btn = (text, action, attrs='', kind='')=>`<button type="button" class="btn ${kind}" data-action="${action}" ${attrs}>${text}</button>`;
 const percent = n => n===null?'\u2014':moneyless(n)+'%';
 const delta = n => n===null?'\u2014':(n>0?'+':'')+moneyless(n);
-const defaultConfig = () => ({version:6,datasetId:DATA.datasetId,days:DATA.declaredDays,school:{name:'',city:'',sre:'',code:'',responsible:''},weekly:{},expected:{},teacherOverrides:{},gradeOverrides:{},calendarAdded:[],calendarRemoved:[],updatedAt:0});
+const defaultConfig = () => ({version:7,datasetId:DATA.datasetId,days:DATA.declaredDays,school:{name:'',city:'',sre:'',code:'',responsible:''},weekly:{},weeklyAudit:{},expected:{},teacherOverrides:{},gradeOverrides:{},calendarAdded:[],calendarRemoved:[],auditTrail:[],updatedAt:0});
+function auditText(value,max=1000){return String(value??'').trim().slice(0,max);}
+function auditIsoDate(d){return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!Number.isNaN(Date.parse(d+'T00:00:00'))&&d.startsWith('2026-');}
+function auditEntryValid(e){
+ return !!(e&&typeof e==='object'&&['calendar_add','calendar_remove','calendar_restore','weekly_override','weekly_restore'].includes(e.type)&&auditText(e.target,240)&&auditText(e.reason,1000)&&auditText(e.source,500)&&Number.isFinite(e.updatedAt)&&e.updatedAt>=0);
+}
+function legacyAuditEntry(type,target,value,updatedAt,originalValue=null){
+ return {type,target,value:value??null,originalValue:originalValue??null,reason:'Ajuste existente antes da rastreabilidade obrigatória; justificativa original não registrada.',source:'Configuração local legada · fonte não registrada',updatedAt:Number(updatedAt)||0,legacy:true};
+}
 function validateConfig(obj) {
- if(!obj || ![2,3,4,5,6].includes(obj.version) || obj.datasetId!==DATA.datasetId) throw new Error('Configura\u00e7\u00e3o de outra base ou vers\u00e3o.');
- if(!integer(obj.days)||obj.days<1||obj.days>200)throw new Error('Dias de refer\u00eancia: use um inteiro entre 1 e 200.');
+ if(!obj || ![2,3,4,5,6,7].includes(obj.version) || obj.datasetId!==DATA.datasetId) throw new Error('Configuração de outra base ou versão.');
+ const incomingVersion=obj.version;
+ if(!integer(obj.days)||obj.days<1||obj.days>200)throw new Error('Dias de referência: use um inteiro entre 1 e 200.');
  const clean=defaultConfig();clean.days=obj.days;if(obj.school&&typeof obj.school==='object'&&!Array.isArray(obj.school)){for(const k of ['name','city','sre','code','responsible']){const v=String(obj.school[k]??'').trim();clean.school[k]=v.slice(0,k==='name'?180:120);}}
- if(!obj.weekly||typeof obj.weekly!=='object'||Array.isArray(obj.weekly)||!obj.expected||typeof obj.expected!=='object'||Array.isArray(obj.expected))throw new Error('Estrutura de configura\u00e7\u00e3o inv\u00e1lida.');
+ if(!obj.weekly||typeof obj.weekly!=='object'||Array.isArray(obj.weekly)||!obj.expected||typeof obj.expected!=='object'||Array.isArray(obj.expected))throw new Error('Estrutura de configuração inválida.');
  for(const [key,val] of Object.entries(obj.weekly)){
-   if(!Object.hasOwn(DATA.refs,key)||!(val===null||(integer(val)&&val>=0&&val<=45)))throw new Error('Carga semanal inv\u00e1lida.');
+   if(!Object.hasOwn(DATA.refs,key)||!(val===null||(integer(val)&&val>=0&&val<=45)))throw new Error('Carga semanal inválida.');
    clean.weekly[key]=val;
+ }
+ if(obj.weeklyAudit!==undefined){
+  if(!obj.weeklyAudit||typeof obj.weeklyAudit!=='object'||Array.isArray(obj.weeklyAudit))throw new Error('Rastreabilidade de carga semanal inválida.');
+  for(const [key,a] of Object.entries(obj.weeklyAudit)){
+   if(!Object.hasOwn(clean.weekly,key)||!a||typeof a!=='object')throw new Error('Rastreabilidade sem ajuste semanal correspondente.');
+   const reason=auditText(a.reason),source=auditText(a.source,500),updatedAt=Number(a.updatedAt),originalWeekly=a.originalWeekly===null?null:Number(a.originalWeekly);
+   if(!reason||!source||!Number.isFinite(updatedAt)||updatedAt<0||!(originalWeekly===null||(integer(originalWeekly)&&originalWeekly>=0&&originalWeekly<=45)))throw new Error('Rastreabilidade de carga semanal incompleta.');
+   clean.weeklyAudit[key]={originalWeekly,reason,source,updatedAt,legacy:!!a.legacy};
+  }
  }
  for(const [key,o] of Object.entries(obj.expected)){
    const record=RAW.find(r=>r.id===key);
-   if(!record||record.unit!=='aulas'||!o||!integer(o.value)||o.value<0||o.value>5000||typeof o.source!=='string'||!o.source.trim()||o.source.length>500)throw new Error('Previs\u00e3o por registro inv\u00e1lida.');
+   if(!record||record.unit!=='aulas'||!o||!integer(o.value)||o.value<0||o.value>5000||typeof o.source!=='string'||!o.source.trim()||o.source.length>500)throw new Error('Previsão por registro inválida.');
    clean.expected[key]={value:o.value,source:o.source.trim()};
  }
  if(obj.teacherOverrides!==undefined){
@@ -88,21 +106,36 @@ function validateConfig(obj) {
   for(const [key,name] of Object.entries(obj.teacherOverrides)){const r=[...(DATA.raw||[]),...(DATA.raw_t1||[])].find(x=>logicalKey(x)===key);if(!r||!Array.isArray(r.professorCandidates)||!r.professorCandidates.includes(name))throw new Error('Professor responsável inválido para '+key);clean.teacherOverrides[key]=name;}
  }
  if(obj.gradeOverrides!==undefined){
-  if(!obj.gradeOverrides||typeof obj.gradeOverrides!=='object'||Array.isArray(obj.gradeOverrides))throw new Error('Estrutura de notas inv\u00e1lida.');
+  if(!obj.gradeOverrides||typeof obj.gradeOverrides!=='object'||Array.isArray(obj.gradeOverrides))throw new Error('Estrutura de notas inválida.');
   for(const [id,g] of Object.entries(obj.gradeOverrides)){
    const r=RAW.find(r=>r.id===id);
-   if(!r||r.unit==='dias'||!g||!integer(g.total)||g.total<1||g.total>9999||!integer(g.withNote)||g.withNote<0||g.withNote>g.total||typeof g.source!=='string'||!g.source.trim()||g.source.length>500||typeof g.reason!=='string'||g.reason.length>1000||typeof g.reasonConfirmed!=='boolean'||(g.reasonConfirmed&&!g.reason.trim())||(g.withNote===g.total&&(g.reason.trim()||g.reasonConfirmed)))throw new Error('Confer\u00eancia de notas inv\u00e1lida.');
+   if(!r||r.unit==='dias'||!g||!integer(g.total)||g.total<1||g.total>9999||!integer(g.withNote)||g.withNote<0||g.withNote>g.total||typeof g.source!=='string'||!g.source.trim()||g.source.length>500||typeof g.reason!=='string'||g.reason.length>1000||typeof g.reasonConfirmed!=='boolean'||(g.reasonConfirmed&&!g.reason.trim())||(g.withNote===g.total&&(g.reason.trim()||g.reasonConfirmed)))throw new Error('Conferência de notas inválida.');
    clean.gradeOverrides[id]={total:g.total,withNote:g.withNote,source:g.source.trim(),reason:g.reason.trim(),reasonConfirmed:g.reasonConfirmed,updatedAt:Number.isFinite(g.updatedAt)?g.updatedAt:0};
   }
  }
  if(obj.calendarAdded!==undefined||obj.calendarRemoved!==undefined){
-  const iso=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!Number.isNaN(Date.parse(d+'T00:00:00'));
   for(const prop of ['calendarAdded','calendarRemoved']){
-   const arr=obj[prop]??[];if(!Array.isArray(arr)||arr.length>100||arr.some(d=>!iso(d)||!d.startsWith('2026-')))throw new Error('Ajuste local de calendário inválido.');
+   const arr=obj[prop]??[];if(!Array.isArray(arr)||arr.length>100||arr.some(d=>!auditIsoDate(d)))throw new Error('Ajuste local de calendário inválido.');
    clean[prop]=[...new Set(arr)].sort();
   }
   clean.calendarAdded=clean.calendarAdded.filter(d=>!clean.calendarRemoved.includes(d));
  }
+ if(obj.auditTrail!==undefined){
+  if(!Array.isArray(obj.auditTrail)||obj.auditTrail.length>1500||obj.auditTrail.some(e=>!auditEntryValid(e)))throw new Error('Histórico de rastreabilidade inválido.');
+  clean.auditTrail=obj.auditTrail.map(e=>({type:e.type,target:auditText(e.target,240),value:e.value??null,originalValue:e.originalValue??null,reason:auditText(e.reason),source:auditText(e.source,500),updatedAt:Number(e.updatedAt),legacy:!!e.legacy}));
+ }
  clean.updatedAt=Number.isFinite(obj.updatedAt)&&obj.updatedAt>=0?obj.updatedAt:0;
+ if(incomingVersion<7){
+  for(const [key,val] of Object.entries(clean.weekly)){
+   if(!clean.weeklyAudit[key]){
+    const original=DATA.refs[key]?.weekly??null;
+    clean.weeklyAudit[key]={originalWeekly:original,reason:'Ajuste existente antes da rastreabilidade obrigatória; justificativa original não registrada.',source:'Configuração local legada · fonte não registrada',updatedAt:clean.updatedAt,legacy:true};
+    clean.auditTrail.push(legacyAuditEntry('weekly_override',key,val,clean.updatedAt,original));
+   }
+  }
+  for(const d of clean.calendarAdded)clean.auditTrail.push(legacyAuditEntry('calendar_add',d,d,clean.updatedAt,null));
+  for(const d of clean.calendarRemoved)clean.auditTrail.push(legacyAuditEntry('calendar_remove',d,d,clean.updatedAt,null));
+ }
+ clean.version=7;
  return clean;
 }
