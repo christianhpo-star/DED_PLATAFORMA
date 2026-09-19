@@ -24,7 +24,7 @@ function exportCSV(){
  const csv='\ufeff'+[h,...data].map(line=>line.map(csvCell).join(';')).join('\r\n');
  downloadFile('DED_'+schoolFileStem()+'_'+state.page+'_2026.csv',csv,'text/csv;charset=utf-8');toast(rows.length+' registros exportados com previstas, registradas e origem do c\u00e1lculo.');
 }
-function exportConfig(){downloadFile('DED_'+schoolFileStem()+'_parametros_2026.json',JSON.stringify(cfg,null,2),'application/json;charset=utf-8');toast('Par\u00e2metros exportados. Os registros do DED n\u00e3o foram alterados.');}
+function exportConfig(){downloadFile('DED_'+schoolFileStem()+'_parametros_2026.json',JSON.stringify(cfg,null,2),'application/json;charset=utf-8');toast('Parâmetros e rastreabilidade exportados. Os registros do DED não foram alterados.');}
 function saveHTML(){const clone=document.documentElement.cloneNode(true);clone.querySelector('#embedded-config').textContent=JSON.stringify(cfg).replace(/</g,'\\u003c');clone.querySelector('#embedded-data-store').textContent=JSON.stringify(dataStore).replace(/</g,'\\u003c');clone.querySelectorAll('dialog').forEach(d=>{d.removeAttribute('open');d.innerHTML='';});clone.querySelector('#toast').classList.remove('visible');downloadFile('DED_em_foco_'+schoolFileStem()+'_com_ajustes.html','<!DOCTYPE html>\n'+clone.outerHTML,'text/html;charset=utf-8');toast('C\u00f3pia HTML criada com parâmetros, planilhas substituídas e histórico semanal incorporados.');}
 async function replaceReport(file,period){
  const rows=await parseTeacherReport(file,period==='1'?'t':'r');
@@ -69,16 +69,16 @@ document.addEventListener('click',e=>{
  else if(a==='save-expected')saveExpected(el.dataset.id);
  else if(a==='clear-expected'){delete cfg.expected[el.dataset.id];if(saveConfig())toast('A linha voltou a usar a refer\u00eancia semanal, quando dispon\u00edvel.');document.getElementById('record-dialog').close();render();}
  else if(a==='save-school'){const name=document.getElementById('school-name')?.value.trim()||'';if(!name){toast('Informe o nome da escola.');document.getElementById('school-name')?.focus();return;}cfg.school={name,code:document.getElementById('school-code')?.value.trim()||'',city:document.getElementById('school-city')?.value.trim()||'',sre:document.getElementById('school-sre')?.value.trim()||'',responsible:document.getElementById('school-responsible')?.value.trim()||''};if(saveConfig())toast('Identificação da escola salva.');render();}
- else if(a==='calendar-remove'){const d=document.getElementById('calendar-remove-date')?.value||'';if(!d){toast('Selecione a data a excluir.');return;}cfg.calendarRemoved=[...new Set([...(cfg.calendarRemoved||[]),d])].sort();cfg.calendarAdded=(cfg.calendarAdded||[]).filter(x=>x!==d);recalcSnapshotCalendar();if(saveConfig())toast('Data excluída do calendário efetivo.');render();}
- else if(a==='calendar-add'){const d=document.getElementById('calendar-add-date')?.value||'';if(!d){toast('Selecione a data de recomposição.');return;}cfg.calendarAdded=[...new Set([...(cfg.calendarAdded||[]),d])].sort();cfg.calendarRemoved=(cfg.calendarRemoved||[]).filter(x=>x!==d);recalcSnapshotCalendar();if(saveConfig())toast('Data adicionada ao calendário efetivo.');render();}
- else if(a==='calendar-clear'){cfg.calendarAdded=[];cfg.calendarRemoved=[];recalcSnapshotCalendar();if(saveConfig())toast('Ajustes locais do calendário removidos.');render();}
+ else if(a==='calendar-remove')requestCalendarAdjustment('remove');
+ else if(a==='calendar-add')requestCalendarAdjustment('add');
+ else if(a==='calendar-clear')requestCalendarReset();
  else if(a==='apply-days'){const input=document.getElementById('reference-days');if(!input.reportValidity())return;const v=Number(input.value);if(!integer(v)||v<1||v>200){toast('Use um n\u00famero inteiro de dias entre 1 e 200.');return;}cfg.days=v;if(saveConfig())toast('Dias aplicados. Todas as estimativas foram recalculadas.');render();}
  else if(a==='save-html')saveHTML();
  else if(a==='export-config')exportConfig();
  else if(a==='export-data-backup')exportDataBackup();
  else if(a==='import-config')document.getElementById('import-settings').click();
  else if(a==='reset-config')askConfirm('Restaurar refer\u00eancias originais?','Isso remove as previs\u00f5es espec\u00edficas e as cargas semanais ajustadas deste painel, e volta às referências curriculares incorporadas. Ajustes locais de calendário também serão removidos. Os registros originais do DED n\u00e3o ser\u00e3o alterados.','confirm-reset','Restaurar');
- else if(a==='confirm-reset'){cfg={...defaultConfig(),school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};saveConfig();document.getElementById('confirm-dialog').close();render();toast('Refer\u00eancias originais restauradas.');}
+ else if(a==='confirm-reset'){document.getElementById('confirm-dialog').close();resetCalculationReferencesAudited();}
  else if(a==='cancel-confirm'){pendingImport=null;document.getElementById('confirm-dialog').close();}
  else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;saveConfig();document.getElementById('confirm-dialog').close();render();toast('Par\u00e2metros importados e indicadores recalculados.');}
 });

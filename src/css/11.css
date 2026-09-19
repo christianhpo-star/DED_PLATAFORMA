@@ -1,0 +1,26 @@
+/* Rastreabilidade de ajustes locais que alteram cálculo. */
+.reference-audit-details{margin-top:7px}
+.reference-audit-details summary,.audit-history-details summary{cursor:pointer;color:var(--blue);font-size:11px;font-weight:650}
+.reference-audit-details>div{margin-top:7px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fafbfd}
+.reference-audit-details p{font-size:10.5px;line-height:1.55;margin:3px 0;color:var(--muted)}
+.audit-warning{color:#7c5718!important}
+.audit-value-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.audit-value-compare>div{border:1px solid var(--line);border-radius:9px;padding:12px;background:#fafbfd}
+.audit-value-compare span{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}
+.audit-value-compare strong{font-size:18px}
+.calendar-audit-list{margin-top:16px}
+.audit-list-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
+.audit-list-head strong{font-size:12px}
+.audit-list-head span{font-size:10.5px;color:var(--muted)}
+.calendar-audit-item{border:1px solid var(--line);border-left:3px solid #b7c4dc;border-radius:9px;padding:11px 12px;margin-top:7px;background:#fafbfd}
+.calendar-audit-item>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.calendar-audit-item p{margin:2px 0;font-size:10.5px;line-height:1.5;color:var(--muted)}
+.audit-empty{display:flex;align-items:center;gap:8px;border:1px solid #cce7df;background:var(--teal-soft);color:#176352;border-radius:9px;padding:10px 12px;margin-top:14px;font-size:11px}
+.audit-empty svg{width:15px;height:15px}
+.audit-history-card .card-head{align-items:flex-start}
+.audit-history-details{padding:0 16px 16px}
+.audit-history-details>summary{margin:12px 0}
+.audit-history-details small{display:block;color:#8b6425;margin-top:3px}
+#weekly-audit-reason,#calendar-remove-reason,#calendar-add-reason{min-height:78px;resize:vertical}
+@media(max-width:650px){.audit-value-compare{grid-template-columns:1fr}.audit-list-head{align-items:flex-start;flex-direction:column}.reference-audit-details>div{padding:10px}.calendar-audit-item p,.reference-audit-details p{font-size:11px}}
+@media print{.reference-audit-details{display:block}.reference-audit-details summary,.audit-history-details summary{display:none}.reference-audit-details>div{display:block;border:0;padding:0;background:none}.audit-history-card{break-inside:avoid}.audit-history-details{padding:0 14px 12px}}
