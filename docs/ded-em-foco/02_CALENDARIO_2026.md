@@ -1,6 +1,6 @@
 # 02 — Auditoria do calendário escolar 2026
 
-Data da revisão: 17/09/2026.
+Data da revisão: 19/09/2026.
 
 ## Fonte principal
 
@@ -71,6 +71,14 @@ Para o acompanhamento semanal do 3º trimestre, o sistema usa apenas as **datas 
 
 A proporcionalidade é uma referência de conferência. A contagem exata de um componente depende do horário semanal real, pois feriados e reposições não afetam igualmente todas as disciplinas.
 
-## Gate restante
+## Pesquisa complementar de 19/09/2026
 
-Confirmar no calendário homologado da EE Professor Hílton Rocha qual data recompôs 08/12. Até lá, o painel mostra a pendência sem reduzir a meta legal de 200 dias.
+A Prefeitura de Belo Horizonte confirma 08/12/2026 como feriado municipal de Imaculada Conceição. Foram pesquisadas fontes públicas SEE/SRE, arquivos institucionais conectados e correio institucional por calendário homologado/reposição da EE Professor Hílton Rocha.
+
+Nenhum documento localizado identifica uma data homologada de recomposição da escola.
+
+## Gate externo remanescente
+
+A confirmação agora depende de documento fornecido pela escola/SRE — calendário homologado, ata/ato de reposição ou equivalente. Até sua apresentação, o painel preserva 65 datas localizadas + 1 dia pendente no 3º trimestre, sem reduzir a meta legal de 200 dias e sem inventar data.
+
+Detalhes: `07_PESQUISA_FONTES_TFE_SENAI_2025_E_CALENDARIO_LOCAL.md`.

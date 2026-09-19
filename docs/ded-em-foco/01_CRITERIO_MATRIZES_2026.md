@@ -1,6 +1,6 @@
 # 01 — Critério de matrizes curriculares — 2026
 
-Data da revisão: 17/09/2026.
+Data da revisão: 19/09/2026.
 
 ## Regra central
 
@@ -56,6 +56,21 @@ Para **Informática** e **Segurança do Trabalho**, o painel mantém as referên
 ## Regra sobre “matriz mais recente”
 
 “Mais recente” significa **mais recente oficialmente aplicável àquela série/oferta**, e não simplesmente a resolução com maior número ou data mais nova. Uma norma 2026 pode trazer matriz nova para ingressantes, enquanto uma regra de transição mantém determinada turma na organização anterior.
+
+## Pesquisa complementar de 19/09/2026
+
+Foi executada busca complementar em fontes públicas SEE/MG e SENAI/FIEMG, arquivos institucionais conectados, PPP disponível da escola e correio institucional.
+
+A pesquisa confirmou:
+
+- oferta de Fabricação Mecânica e Sistemas de Energia Renovável na EE Professor Hílton Rocha;
+- ingresso da coorte do Projeto Trilhas de Futuro nas Escolas em 2025;
+- matriz única do curso implementada ao longo de três anos e participação da instituição ofertante no registro dos componentes técnicos no DED+;
+- inexistência, nas fontes localizadas, de distribuição semanal aplicável a `Fabricação Mecânica III/IV` e `Sistemas de Energia Renovável III/IV` da coorte 2025.
+
+O Documento Orientador 2026, o Guia Prático de Organização Curricular 2026 e o PPP disponível não fornecem essa distribuição. Relatórios do DED registram o realizado, mas não substituem uma matriz/plano/horário como fonte do previsto.
+
+Conclusão: a ausência de referência automática continua **intencional e metodologicamente validada**. O detalhamento da pesquisa está em `07_PESQUISA_FONTES_TFE_SENAI_2025_E_CALENDARIO_LOCAL.md`.
 
 ## Gate de mudança
 
