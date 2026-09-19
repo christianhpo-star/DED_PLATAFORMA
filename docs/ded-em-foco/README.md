@@ -14,6 +14,7 @@ Arquivos preservados:
 4. `04_HISTORICO_AUDITORIA.md`
 5. `05_VALIDACAO_TECNICA.md`
 6. `06_EVIDENCIAS_OPERACIONAIS_SENAI.md`
+7. `07_PESQUISA_FONTES_TFE_SENAI_2025_E_CALENDARIO_LOCAL.md`
 
 ## Estado metodológico corrente
 
@@ -27,11 +28,19 @@ Permanecem sem autorização para inferência automática:
 
 Até que a fonte específica seja localizada e validada, esses componentes devem permanecer como **sem referência documental**, nunca como déficit confirmado.
 
-## Gates ainda abertos
+## Resultado da pesquisa de 19/09/2026
 
-1. localizar/validar matriz, plano de execução, grade SENAI/TFE 2025 ou horário homologado aplicável aos 2º anos em 2026;
-2. confirmar documentalmente a recomposição local relacionada a 08/12 quando aplicável;
-3. só depois avaliar eventual alteração de referência no motor, sempre com regressão e rastreabilidade.
+A pesquisa foi executada em fontes públicas oficiais, arquivos institucionais conectados e correio institucional. O documento `07_PESQUISA_FONTES_TFE_SENAI_2025_E_CALENDARIO_LOCAL.md` registra método, fontes e resultado.
+
+Não foi localizada fonte suficiente para definir automaticamente a carga de `Fabricação Mecânica III/IV` ou `Sistemas de Energia Renovável III/IV` da coorte 2025. Também não foi localizada a data homologada de recomposição de 08/12 da EE Professor Hílton Rocha.
+
+Esses dois itens passam a ser tratados como **dependências externas controladas**, não como lacunas a serem preenchidas por inferência.
+
+## Gates externos remanescentes
+
+1. receber da escola/SRE/SENAI matriz, plano de execução, grade TFE/SENAI 2025 ou horário homologado aplicável aos 2º anos;
+2. receber calendário escolar homologado que identifique a recomposição local de 08/12, se aplicável;
+3. somente com uma dessas evidências reabrir alteração do motor, sempre com regressão e rastreabilidade.
 
 ## Relação com a trilha UX
 
