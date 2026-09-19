@@ -24,7 +24,7 @@ function exportCSV(){
  const csv='\ufeff'+[h,...data].map(line=>line.map(csvCell).join(';')).join('\r\n');
  downloadFile('DED_'+schoolFileStem()+'_'+state.page+'_2026.csv',csv,'text/csv;charset=utf-8');toast(rows.length+' registros exportados com previstas, registradas e origem do c\u00e1lculo.');
 }
-function exportConfig(){downloadFile('DED_'+schoolFileStem()+'_parametros_2026.json',JSON.stringify(cfg,null,2),'application/json;charset=utf-8');toast('Par\u00e2metros exportados. Os registros do DED n\u00e3o foram alterados.');}
+function exportConfig(){downloadFile('DED_'+schoolFileStem()+'_parametros_2026.json',JSON.stringify(cfg,null,2),'application/json;charset=utf-8');toast('Parâmetros e rastreabilidade exportados. Os registros do DED não foram alterados.');}
 function saveHTML(){const clone=document.documentElement.cloneNode(true);clone.querySelector('#embedded-config').textContent=JSON.stringify(cfg).replace(/</g,'\\u003c');clone.querySelector('#embedded-data-store').textContent=JSON.stringify(dataStore).replace(/</g,'\\u003c');clone.querySelectorAll('dialog').forEach(d=>{d.removeAttribute('open');d.innerHTML='';});clone.querySelector('#toast').classList.remove('visible');downloadFile('DED_em_foco_'+schoolFileStem()+'_com_ajustes.html','<!DOCTYPE html>\n'+clone.outerHTML,'text/html;charset=utf-8');toast('C\u00f3pia HTML criada com parâmetros, planilhas substituídas e histórico semanal incorporados.');}
 async function replaceReport(file,period){
  const rows=await parseTeacherReport(file,period==='1'?'t':'r');
@@ -78,7 +78,7 @@ document.addEventListener('click',e=>{
  else if(a==='export-data-backup')exportDataBackup();
  else if(a==='import-config')document.getElementById('import-settings').click();
  else if(a==='reset-config')askConfirm('Restaurar refer\u00eancias originais?','Isso remove as previs\u00f5es espec\u00edficas e as cargas semanais ajustadas deste painel, e volta às referências curriculares incorporadas. Ajustes locais de calendário também serão removidos. Os registros originais do DED n\u00e3o ser\u00e3o alterados.','confirm-reset','Restaurar');
- else if(a==='confirm-reset'){cfg={...defaultConfig(),school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};saveConfig();document.getElementById('confirm-dialog').close();render();toast('Refer\u00eancias originais restauradas.');}
+ else if(a==='confirm-reset'){document.getElementById('confirm-dialog').close();resetCalculationReferencesAudited();}
  else if(a==='cancel-confirm'){pendingImport=null;document.getElementById('confirm-dialog').close();}
  else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;saveConfig();document.getElementById('confirm-dialog').close();render();toast('Par\u00e2metros importados e indicadores recalculados.');}
 });
