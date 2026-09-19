@@ -24,7 +24,8 @@ function planned(r){
  const w=weeklyFor(r);if(Object.hasOwn(cfg.expected,r.id)){const o=cfg.expected[r.id];return {value:o.value,kind:'entered',weekly:w,days:null,source:o.source};}
  if(w===null)return {value:null,kind:'unknown',weekly:null,days:null,source:'Carga semanal não informada para este componente e modalidade.'};
  const curDays=getActiveDays(),value=calendarExpected(w);let detail=state.trimester==='all'||state.trimester==='consolidated'?`${w} A/S × ${trimesterDays('1')} DL ÷ 5 + ${w} A/S × ${trimesterDays('2')} DL ÷ 5, com arredondamento por trimestre.`:`${w} A/S × ${curDays} dias letivos ÷ 5, arredondado.`;
- return {value,kind:'estimated',weekly:w,days:curDays,source:(Object.hasOwn(cfg.weekly,r.refKey)?'Carga semanal ajustada pela escola. ':DATA.refs[r.refKey].source+' ')+'Calendário Escolar SEE/MG 2026: '+detail};
+ const localMeta=cfg.weeklyAudit?.[r.refKey],weeklySource=Object.hasOwn(cfg.weekly,r.refKey)?`Ajuste local, não fonte oficial. Fonte informada: ${localMeta?.source||'não registrada'}. `:(DATA.refs[r.refKey]?.source||'Referência semanal documentada.')+' ';
+ return {value,kind:'estimated',weekly:w,days:curDays,source:weeklySource+'Calendário Escolar SEE/MG 2026: '+detail};
 }
 // Grade coverage is based on explicit class/component counts, never on the DED points field.
 const gradeKinds = {
