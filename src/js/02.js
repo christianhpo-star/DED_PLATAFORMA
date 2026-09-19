@@ -124,6 +124,11 @@ function validateConfig(obj) {
   if(!Array.isArray(obj.auditTrail)||obj.auditTrail.length>1500||obj.auditTrail.some(e=>!auditEntryValid(e)))throw new Error('Histórico de rastreabilidade inválido.');
   clean.auditTrail=obj.auditTrail.map(e=>({type:e.type,target:auditText(e.target,240),value:e.value??null,originalValue:e.originalValue??null,reason:auditText(e.reason),source:auditText(e.source,500),updatedAt:Number(e.updatedAt),legacy:!!e.legacy}));
  }
+ if(incomingVersion>=7){
+  for(const key of Object.keys(clean.weekly))if(!clean.weeklyAudit[key])throw new Error('Ajuste semanal sem justificativa/fonte auditável.');
+  for(const d of clean.calendarAdded)if(!clean.auditTrail.some(e=>e.type==='calendar_add'&&e.target===d))throw new Error('Data adicionada sem rastreabilidade.');
+  for(const d of clean.calendarRemoved)if(!clean.auditTrail.some(e=>e.type==='calendar_remove'&&e.target===d))throw new Error('Data excluída sem rastreabilidade.');
+ }
  clean.updatedAt=Number.isFinite(obj.updatedAt)&&obj.updatedAt>=0?obj.updatedAt:0;
  if(incomingVersion<7){
   for(const [key,val] of Object.entries(clean.weekly)){
