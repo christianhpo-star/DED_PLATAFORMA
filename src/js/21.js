@@ -149,6 +149,20 @@ function restoreCalendarModel(){
  for(const d of cfg.calendarRemoved||[])appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração do calendário-base incorporado.',source,updatedAt:now});
  cfg.calendarAdded=[];cfg.calendarRemoved=[];recalcSnapshotCalendar();if(saveConfig())toast('Calendário-base restaurado e alteração registrada.');render();
 }
+function resetCalculationReferencesAudited(){
+ const oldWeekly={...(cfg.weekly||{})},oldWeeklyAudit={...(cfg.weeklyAudit||{})},oldAdded=[...(cfg.calendarAdded||[])],oldRemoved=[...(cfg.calendarRemoved||[])],trail=[...(cfg.auditTrail||[])],now=Date.now();
+ const preserved={school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};
+ cfg=defaultConfig();cfg.school=preserved.school;cfg.gradeOverrides=preserved.gradeOverrides;cfg.teacherOverrides=preserved.teacherOverrides;cfg.auditTrail=trail;
+ for(const [key,value] of Object.entries(oldWeekly)){
+  const original=DATA.refs[key]?.weekly??oldWeeklyAudit[key]?.originalWeekly??null;
+  appendAuditEvent({type:'weekly_restore',target:key,value:original,originalValue:value,reason:'Restauração geral das referências incorporadas.',source:DATA.refs[key]?.source||'Referência documental incorporada no template.',updatedAt:now});
+ }
+ const calendarSource='Calendário Escolar SEE/MG 2026 incorporado no template.';
+ for(const d of oldAdded)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'adicionado localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
+ for(const d of oldRemoved)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
+ recalcSnapshotCalendar();if(saveConfig())toast('Referências originais restauradas; histórico de rastreabilidade preservado.');render();
+}
+
 document.addEventListener('submit',e=>{
  if(e.target.id!=='weekly-audit-form')return;
  e.preventDefault();applyWeeklyReferenceChange();
@@ -161,4 +175,4 @@ document.addEventListener('click',e=>{
  else if(a==='confirm-calendar-audit')applyCalendarAdjustment();
  else if(a==='confirm-calendar-clear-audited'){document.getElementById('confirm-dialog')?.close();restoreCalendarModel();}
 });
-window.DED_REFERENCE_AUDIT=Object.freeze({appendAuditEvent,referenceOriginCell,calendarAuditPanel,auditTrailPanel,requestWeeklyReferenceChange,restoreWeeklyReference,requestCalendarAdjustment,restoreCalendarModel});
+window.DED_REFERENCE_AUDIT=Object.freeze({appendAuditEvent,referenceOriginCell,calendarAuditPanel,auditTrailPanel,requestWeeklyReferenceChange,restoreWeeklyReference,requestCalendarAdjustment,restoreCalendarModel,resetCalculationReferencesAudited});
