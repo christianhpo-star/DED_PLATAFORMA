@@ -25,6 +25,7 @@ function syncFilterOptions(){
  if(state.teacher&&!names.includes(state.teacher))state.teacher='';
  document.getElementById('teacher-filter').innerHTML=options(names.map(n=>[n,title(n)]),state.teacher,'Todos os professores');
  document.getElementById('query-filter').value=state.query;
+ if(typeof renderFilterUX==='function')renderFilterUX();
 }
 
 // Leitor XLSX local: extrai somente as células necessárias do relatório oficial, sem enviar arquivos para a internet.

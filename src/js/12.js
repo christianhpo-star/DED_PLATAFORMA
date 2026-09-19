@@ -3,6 +3,7 @@ function render(){
  const base=baseRows(),s=stats(base);document.getElementById('filter-summary').innerHTML=`<strong>${base.length}</strong> registros &middot; <strong>${s.teachers.length}</strong> docentes &middot; <strong>${s.classes.length}</strong> turmas no filtro geral`;
  const renderers={overview,teachers:teachersPage,classes:classesPage,compare:comparePage,pending:pendingPage,grades:gradesPage,consolidated:consolidatedPage,weekly:weeklyPage,imports:importsPage,settings:settingsPage};
  document.getElementById('view').innerHTML=renderers[state.page]();
+ if(typeof renderFilterUX==='function')renderFilterUX();
  document.querySelectorAll('.table-wrap').forEach(w=>{const over=w.scrollWidth>w.clientWidth+2;w.classList.toggle('has-overflow',over);if(over){w.setAttribute('tabindex','0');w.setAttribute('role','region');w.setAttribute('aria-label','Tabela com rolagem horizontal');}});
  renderDataContext();updateSchoolUI();document.title=pageMeta[state.page][0]+' | DED em foco | '+schoolName();
 }
