@@ -1,6 +1,6 @@
 # 06 — Evidências operacionais sobre as pendências SENAI
 
-Data da revisão: 17/09/2026.
+Data da revisão: 19/09/2026.
 
 ## 1. Fonte contemporânea ao fechamento do 1º trimestre
 
@@ -58,3 +58,12 @@ As ressalvas permanecem:
 - a fonte de 26/05 não identifica as duas turmas;
 - nenhuma das duas fontes substitui o plano/horário SENAI necessário para calcular a carga exata de SER III e IV;
 - diferença de registro não é tratada como prova automática de aula não ministrada.
+
+
+## 5. Encerramento da pesquisa eletrônica — 19/09/2026
+
+A pesquisa pública e institucional foi ampliada para matrizes, planos, horários, documentos da Educação Profissional, PPP e mensagens/arquivos relacionados à oferta.
+
+O resultado operacional permanece inalterado: as evidências de regularização do DED ajudam a interpretar o histórico de registros, mas nenhuma delas fornece a carga semanal normativa de Fabricação Mecânica III/IV ou Sistemas de Energia Renovável III/IV da coorte iniciada em 2025.
+
+Por isso, esses componentes permanecem fora da comparação automática até recebimento de fonte específica. Ver `07_PESQUISA_FONTES_TFE_SENAI_2025_E_CALENDARIO_LOCAL.md`.
