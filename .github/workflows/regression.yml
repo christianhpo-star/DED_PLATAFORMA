@@ -21,3 +21,12 @@ jobs:
           node-version: 22
       - name: Run regression suite
         run: npm test
+
+      - name: Upload source export
+        uses: actions/upload-artifact@v4
+        with:
+          name: ded-source-export
+          path: |
+            src/
+            data/matrizes/emti_2026_anonimizada.json
+          if-no-files-found: error
