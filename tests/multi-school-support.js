@@ -54,6 +54,18 @@ assert.strictEqual(ef9.year, '9', '9º ano deve ser extraído.');
 assert.strictEqual(ef9.bucket, 'EF_AF', '9º EF deve mapear para bucket EF_AF.');
 assert.strictEqual(ctx.stage(ef9), 'AF', 'Etapa deve ser AF.');
 
+// Ensino Fundamental Anos Iniciais (1º ao 5º ano)
+const ef1 = ctx.classifySchoolProfile('1º ANO EF - TURMA A', 'MANHÃ');
+assert.strictEqual(ef1.year, '1', '1º ano deve ser extraído.');
+assert.strictEqual(ef1.bucket, 'EF_AI', '1º EF deve mapear para bucket EF_AI.');
+assert.strictEqual(ef1.offer, 'FUNDAMENTAL_REGULAR', 'Oferta deve ser FUNDAMENTAL_REGULAR.');
+assert.strictEqual(ctx.stage(ef1), 'AI', 'Etapa deve ser AI.');
+
+const ef3 = ctx.classifySchoolProfile('3º ANO FUNDAMENTAL - TURMA 1', 'TARDE');
+assert.strictEqual(ef3.year, '3', '3º ano deve ser extraído.');
+assert.strictEqual(ef3.bucket, 'EF_AI', '3º EF deve mapear para bucket EF_AI.');
+assert.strictEqual(ctx.stage(ef3), 'AI', 'Etapa deve ser AI.');
+
 // Ensino Médio Regular Diurno (Manhã e Tarde)
 const em1Diurno = ctx.classifySchoolProfile('1º EM REG 1 - R QUARENTA, 15', 'MANHÃ');
 assert.strictEqual(em1Diurno.year, '1', '1º ano EM diurno deve ser extraído.');
@@ -85,6 +97,11 @@ assert.strictEqual(emtiTec.offer, 'EMTI_TECNICO', 'Oferta deve ser EMTI_TECNICO.
 assert.strictEqual(emtiTec.courseKey, 'SISTEMAS_ENERGIA_RENOVAVEL', 'Curso técnico deve ser identificado.');
 
 console.log('2. Testando soma de cargas semanais das matrizes oficiais SEE/MG 2026...');
+
+// Soma da matriz EF Anos Iniciais (8 componentes base) = 25 A/S
+const aiBaseComponents = ['LINGUA PORTUGUESA', 'MATEMATICA', 'CIENCIAS', 'HISTORIA', 'GEOGRAFIA', 'EDUCACAO FISICA', 'ARTE', 'ENSINO RELIGIOSO'];
+const aiTotal = aiBaseComponents.reduce((sum, comp) => sum + (ctx.OFFICIAL_WEEKLY[`EF_AI|${comp}`] || 0), 0);
+assert.strictEqual(aiTotal, 25, `Matriz Fundamental Anos Iniciais (base) deve somar exatamente 25 A/S (deu ${aiTotal}).`);
 
 // Soma da matriz EF Anos Finais = 25 A/S
 const efWeekly = Object.entries(ctx.OFFICIAL_WEEKLY).filter(([k]) => k.startsWith('EF_AF|'));
