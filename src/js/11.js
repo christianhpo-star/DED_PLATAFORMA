@@ -13,3 +13,13 @@ function settingsPage(){
  ${auditTrailPanel()}
  <section class="card"><div class="card-head"><div><h2>Guardar e levar os ajustes</h2><p class="sub">Configurações e dados permanecem locais.</p></div></div><div class="card-body"><div class="inline-actions">${btn(icon('save')+' Salvar cópia HTML','save-html','','btn-primary')}${btn(icon('download')+' Exportar parâmetros','export-config')}${btn(icon('upload')+' Importar parâmetros','import-config')}</div><p class="setting-note">Use “Salvar cópia HTML” para levar junto as planilhas incorporadas e os ajustes locais. Não publique cópias preenchidas em repositório público.</p></div></section>`;
 }
+// Seletor rápido: deixa explícita a escolha entre as matrizes regulares, sem forçar turmas da tarde para o noturno.
+function regularMatrixAssignmentPanel(){
+ const seen=new Map();for(const r of [...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])]){const profile=classifySchoolProfile(r.shortClass,r.turno);if(profile.isReg&&profile.year&&!profile.isInt)seen.set(String(r.cod_turma),{...r,profile});}
+ const classes=[...seen.values()].sort((a,b)=>a.shortClass.localeCompare(b.shortClass,'pt-BR'));
+ if(!classes.length)return '';
+ const body=classes.map(r=>{const year=r.profile.year,selected=cfg.regularMatrixByClass?.[String(r.cod_turma)]||r.bucket,diurno=`EM_REG_D_${year}`,noturno=`EM_REG_${year}`;return `<tr><td><strong>${esc(r.shortClass)}</strong><small class="record-info">Código ${esc(r.cod_turma)} · turno no DED: ${esc(r.turno||'não informado')}</small></td><td><select data-regular-matrix="${esc(r.cod_turma)}"><option value="${diurno}" ${selected===diurno?'selected':''}>Regular diurno · manhã/tarde</option><option value="${noturno}" ${selected===noturno?'selected':''}>Regular noturno · noite</option></select></td></tr>`;}).join('');
+ return `<section class="card"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MATRIZ REGULAR POR TURMA</div><h2>Confirme a matriz de cada turma regular</h2><p class="sub">O turno do DED sugere a seleção inicial; manhã e tarde usam a opção diurna. A escola pode ajustar a referência por turma.</p></div>${badge(classes.length+' turma(s)','info')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma</th><th>Matriz aplicável</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+}
+const settingsPageBase=settingsPage;
+settingsPage=function(){return settingsPageBase().replace('<section class="card matrix-source-card"',regularMatrixAssignmentPanel()+'<section class="card matrix-source-card"');};

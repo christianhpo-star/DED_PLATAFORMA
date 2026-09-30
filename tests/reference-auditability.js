@@ -38,7 +38,7 @@ const audited={
  ],updatedAt:11
 };
 const valid=ctx.validateConfig(JSON.parse(JSON.stringify(audited)));
-assert.strictEqual(valid.version,7,'Configuração auditável deve permanecer no schema v7.');
+assert.strictEqual(valid.version,8,'Configuração auditável deve migrar para o schema v8.');
 assert.strictEqual(valid.weeklyAudit.REF.originalWeekly,4,'Valor documental original deve permanecer recuperável.');
 assert.strictEqual(valid.weeklyAudit.REF.source,'Horário homologado de 15/09/2026','Fonte local informada deve ser preservada.');
 assert(valid.auditTrail.some(e=>e.type==='calendar_add'&&e.target==='2026-12-12'),'Ajuste ativo de calendário deve ter trilha correspondente.');
@@ -51,7 +51,7 @@ assert.throws(()=>ctx.validateConfig(noCalendarAudit),/Data adicionada sem rastr
 
 const legacy={version:6,datasetId:'ded-plataforma-template-2026',days:68,school:{},weekly:{REF:6},expected:{},teacherOverrides:{},gradeOverrides:{},calendarAdded:[],calendarRemoved:['2026-12-08'],updatedAt:99};
 const migrated=ctx.validateConfig(legacy);
-assert.strictEqual(migrated.version,7,'Configuração legada deve migrar para v7.');
+assert.strictEqual(migrated.version,8,'Configuração legada deve migrar para v8.');
 assert.strictEqual(migrated.weeklyAudit.REF.originalWeekly,4,'Migração deve capturar o valor documental original.');
 assert.strictEqual(migrated.weeklyAudit.REF.legacy,true,'Ajuste antigo deve ser marcado como legado.');
 assert(migrated.weeklyAudit.REF.source.includes('fonte não registrada'),'Migração não pode inventar fonte oficial.');
@@ -73,6 +73,6 @@ assert(src21.includes("type:'calendar_restore'"),'Restauração de calendário d
 assert(src21.includes('Este ajuste é local e não transforma a fonte informada em referência oficial.'),'Interface deve impedir confusão entre fonte local e oficial.');
 assert(!src21.includes('DATA.refs[key].source='),'Ajuste local não pode sobrescrever a fonte documental incorporada.');
 assert(src13.includes('Parâmetros e rastreabilidade exportados.'),'Exportação de parâmetros deve declarar inclusão da rastreabilidade.');
-assert(html.includes('"version":7')&&html.includes('"weeklyAudit":{}')&&html.includes('"auditTrail":[]'),'Template público deve nascer no schema auditável v7.');
+assert(html.includes('"version":8')&&html.includes('"weeklyAudit":{}')&&html.includes('"auditTrail":[]'),'Template público deve nascer no schema auditável v8.');
 
 console.log('OK: rastreabilidade de calendário, A/S, migração legada e restauração documental verificadas.');

@@ -1,7 +1,9 @@
 'use strict';
-let loadWarning='';let cfg=defaultConfig();
+let loadWarning='';cfg=defaultConfig();
 try{const embedded=JSON.parse(document.getElementById('embedded-config').textContent);if(embedded&&embedded.version)cfg=validateConfig(embedded);}catch(e){loadWarning='A configura\u00e7\u00e3o incorporada n\u00e3o p\u00f4de ser lida. Foram usadas as refer\u00eancias originais.';}
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
+// Reclassifica após ler as escolhas locais, mantendo o turno do DED como sugestão e não como imposição.
+normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
@@ -11,6 +13,17 @@ function initialTrimester(){
 }
 const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
+function setRegularMatrixForClass(classId,bucket){
+ const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
+ if(!row||!profile?.isReg||!new RegExp(`^EM_REG(?:_D)?_${profile.year}$`).test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return;}
+ cfg.regularMatrixByClass[classId]=bucket;
+ const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
+ for(const records of collections)normalizeEmbeddedRows(records);
+ rebuildConsolidated();RAW=getActiveRaw();
+ if(saveConfig())toast('Matriz da turma atualizada. A referência de cálculo foi recalculada localmente.');
+ render();
+}
 function schoolProfile(){return cfg.school||{name:'',city:'',sre:'',code:'',responsible:''};}
 function schoolName(){return schoolProfile().name||'Escola não configurada';}
 function schoolFileStem(){const s=(schoolProfile().code||schoolProfile().name||'escola').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,60);return s||'escola';}
