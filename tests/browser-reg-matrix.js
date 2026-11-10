@@ -62,7 +62,7 @@ async function main(){
   const url='http://127.0.0.1:'+server.address().port+'/';
   await page.goto(url,{waitUntil:'load'});
   await page.waitForFunction(()=>Boolean(window.DED));
-  await page.locator('[data-page="settings"]').click();
+  await page.locator('#navigation [data-page="settings"]').click();
   const morning=page.locator('select[data-regular-matrix="1001"]');
   const night=page.locator('select[data-regular-matrix="1002"]');
   await morning.waitFor();
