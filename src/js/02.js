@@ -68,17 +68,17 @@ const badge = (text,type='')=>`<span class="status ${type}"><span class="status-
 const btn = (text, action, attrs='', kind='')=>`<button type="button" class="btn ${kind}" data-action="${action}" ${attrs}>${text}</button>`;
 const percent = n => n===null?'\u2014':moneyless(n)+'%';
 const delta = n => n===null?'\u2014':(n>0?'+':'')+moneyless(n);
-const defaultConfig = () => ({version:7,datasetId:DATA.datasetId,days:DATA.declaredDays,school:{name:'',city:'',sre:'',code:'',responsible:''},weekly:{},weeklyAudit:{},expected:{},teacherOverrides:{},gradeOverrides:{},calendarAdded:[],calendarRemoved:[],auditTrail:[],updatedAt:0});
+const defaultConfig = () => ({version:8,datasetId:DATA.datasetId,days:DATA.declaredDays,school:{name:'',city:'',sre:'',code:'',responsible:''},weekly:{},weeklyAudit:{},expected:{},teacherOverrides:{},gradeOverrides:{},regularMatrixByClass:{},calendarAdded:[],calendarRemoved:[],auditTrail:[],updatedAt:0});
 function auditText(value,max=1000){return String(value??'').trim().slice(0,max);}
 function auditIsoDate(d){return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!Number.isNaN(Date.parse(d+'T00:00:00'))&&d.startsWith('2026-');}
 function auditEntryValid(e){
- return !!(e&&typeof e==='object'&&['calendar_add','calendar_remove','calendar_restore','weekly_override','weekly_restore'].includes(e.type)&&auditText(e.target,240)&&auditText(e.reason,1000)&&auditText(e.source,500)&&Number.isFinite(e.updatedAt)&&e.updatedAt>=0);
+ return !!(e&&typeof e==='object'&&['calendar_add','calendar_remove','calendar_restore','weekly_override','weekly_restore','regular_matrix_override','regular_matrix_restore'].includes(e.type)&&auditText(e.target,240)&&auditText(e.reason,1000)&&auditText(e.source,500)&&Number.isFinite(e.updatedAt)&&e.updatedAt>=0);
 }
 function legacyAuditEntry(type,target,value,updatedAt,originalValue=null){
  return {type,target,value:value??null,originalValue:originalValue??null,reason:'Ajuste existente antes da rastreabilidade obrigatória; justificativa original não registrada.',source:'Configuração local legada · fonte não registrada',updatedAt:Number(updatedAt)||0,legacy:true};
 }
 function validateConfig(obj) {
- if(!obj || ![2,3,4,5,6,7].includes(obj.version) || obj.datasetId!==DATA.datasetId) throw new Error('Configuração de outra base ou versão.');
+ if(!obj || ![2,3,4,5,6,7,8].includes(obj.version) || obj.datasetId!==DATA.datasetId) throw new Error('Configuração de outra base ou versão.');
  const incomingVersion=obj.version;
  if(!integer(obj.days)||obj.days<1||obj.days>200)throw new Error('Dias de referência: use um inteiro entre 1 e 200.');
  const clean=defaultConfig();clean.days=obj.days;if(obj.school&&typeof obj.school==='object'&&!Array.isArray(obj.school)){for(const k of ['name','city','sre','code','responsible']){const v=String(obj.school[k]??'').trim();clean.school[k]=v.slice(0,k==='name'?180:120);}}
@@ -113,6 +113,13 @@ function validateConfig(obj) {
    clean.gradeOverrides[id]={total:g.total,withNote:g.withNote,source:g.source.trim(),reason:g.reason.trim(),reasonConfirmed:g.reasonConfirmed,updatedAt:Number.isFinite(g.updatedAt)?g.updatedAt:0};
   }
  }
+ if(obj.regularMatrixByClass!==undefined){
+  if(!obj.regularMatrixByClass||typeof obj.regularMatrixByClass!=='object'||Array.isArray(obj.regularMatrixByClass))throw new Error('Seleção de matriz regular inválida.');
+  for(const [classId,bucket] of Object.entries(obj.regularMatrixByClass)){
+   if(!/^[A-Za-z0-9_-]{1,100}$/.test(classId)||!/^EM_REG(?:_D)?_[123]$/.test(String(bucket)))throw new Error('Matriz regular por turma inválida.');
+   clean.regularMatrixByClass[classId]=String(bucket);
+  }
+ }
  if(obj.calendarAdded!==undefined||obj.calendarRemoved!==undefined){
   for(const prop of ['calendarAdded','calendarRemoved']){
    const arr=obj[prop]??[];if(!Array.isArray(arr)||arr.length>100||arr.some(d=>!auditIsoDate(d)))throw new Error('Ajuste local de calendário inválido.');
@@ -130,6 +137,10 @@ function validateConfig(obj) {
   for(const d of clean.calendarRemoved)if(!clean.auditTrail.some(e=>e.type==='calendar_remove'&&e.target===d))throw new Error('Data excluída sem rastreabilidade.');
  }
  clean.updatedAt=Number.isFinite(obj.updatedAt)&&obj.updatedAt>=0?obj.updatedAt:0;
+ // Selecoes feitas antes da auditoria recebem marca de legado, sem inventar fonte documental.
+ for(const [classId,bucket] of Object.entries(clean.regularMatrixByClass)){
+  if(!clean.auditTrail.some(e=>e.type==='regular_matrix_override'&&e.target===classId))clean.auditTrail.push(legacyAuditEntry('regular_matrix_override',classId,bucket,clean.updatedAt,null));
+ }
  if(incomingVersion<7){
   for(const [key,val] of Object.entries(clean.weekly)){
    if(!clean.weeklyAudit[key]){
@@ -141,6 +152,6 @@ function validateConfig(obj) {
   for(const d of clean.calendarAdded)clean.auditTrail.push(legacyAuditEntry('calendar_add',d,d,clean.updatedAt,null));
   for(const d of clean.calendarRemoved)clean.auditTrail.push(legacyAuditEntry('calendar_remove',d,d,clean.updatedAt,null));
  }
- clean.version=7;
+ clean.version=8;
  return clean;
 }

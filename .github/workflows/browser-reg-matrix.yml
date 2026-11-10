@@ -1,0 +1,46 @@
+name: DED browser QA - matriz REG
+
+on:
+  pull_request:
+    paths:
+      - 'src/js/**'
+      - 'src/index.html'
+      - 'tests/browser-reg-matrix.js'
+      - 'tests/reference-auditability.js'
+      - '.github/workflows/browser-reg-matrix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-reg-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run quick regressions
+        run: npm test
+      - name: Build standalone HTML
+        run: npm run build
+      - name: Verify committed standalone HTML matches sources
+        run: git diff --exit-code -- dist/DED_em_Foco_MultiEscola_2026.html
+      - name: Prepare lightweight browser driver
+        run: |
+          command -v google-chrome || command -v google-chrome-stable || command -v chromium
+          npm install --no-save --ignore-scripts playwright-core@1.56.1
+      - name: Browser QA using synthetic classes only
+        run: node tests/browser-reg-matrix.js
+      - name: Keep failure screenshot only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-reg-matrix-failure
+          path: qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 3

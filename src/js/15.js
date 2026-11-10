@@ -27,7 +27,7 @@ function nextImportPaint(){return new Promise(resolve=>requestAnimationFrame(()=
 function importRecoveryHint(message){
  const m=normalize(message||'');
  if(m.includes('cabecalho')||m.includes('relatorio de lancamentos'))return 'Próximo passo: selecione o Relatório de Lançamentos do Professor em formato XLSX, sem alterar os cabeçalhos.';
- if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira no arquivo se REG está no turno NOITE e INT no turno INTEGRAL.';
+ if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira se a oferta integral está corretamente identificada; turmas REG podem ser diurnas ou noturnas e sua matriz deve ser conferida em Configurações.';
  if(m.includes('xlsx valido')||m.includes('estrutura zip')||m.includes('xml interno'))return 'Próximo passo: gere novamente o XLSX no sistema de origem e tente com o arquivo sem edição intermediária.';
  if(m.includes('guardar')||m.includes('salv')||m.includes('armazen'))return 'Próximo passo: libere espaço do navegador ou exporte uma cópia/backup antes de tentar novamente.';
  return 'Próximo passo: confira o arquivo e os dados indicados na mensagem; a base atual não foi alterada.';
@@ -111,7 +111,7 @@ function hydrateDataStore(store,refs){
  dataStore=normalizeDataStore(store);
  if(refs&&typeof refs==='object')DATA.refs=safeClone(refs);
  DATA.raw_t1=dataStore.t1===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t1||[]):dataStore.t1;DATA.raw=dataStore.t2===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t2||[]):dataStore.t2;recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
- normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();
+ reclassifyRowsForCurrentConfig();
 }
 function commitImport(candidate=safeImportStage){
  if(!candidate)return;
