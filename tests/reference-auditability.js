@@ -11,6 +11,9 @@ const src11=readLF(path.join(root,'src','js','11.js'));
 const src13=readLF(path.join(root,'src','js','13.js'));
 const src14=readLF(path.join(root,'src','js','14.js'));
 const src21=readLF(path.join(root,'src','js','21.js'));
+const src07=readLF(path.join(root,'src','js','07.js'));
+const src01=readLF(path.join(root,'src','js','01.js'));
+const src14=readLF(path.join(root,'src','js','14.js'));
 const html=readLF(path.join(root,'src','index.html'));
 
 const start=src02.indexOf('const defaultConfig = () =>');
@@ -57,6 +60,11 @@ assert.strictEqual(migrated.weeklyAudit.REF.legacy,true,'Ajuste antigo deve ser 
 assert(migrated.weeklyAudit.REF.source.includes('fonte não registrada'),'Migração não pode inventar fonte oficial.');
 assert(migrated.auditTrail.some(e=>e.type==='calendar_remove'&&e.target==='2026-12-08'&&e.legacy),'Calendário legado deve ganhar trilha explicitamente incompleta.');
 
+const selected=ctx.validateConfig({...audited,regularMatrixByClass:{TURMA1:'EM_REG_D_1'}});
+assert.strictEqual(selected.regularMatrixByClass.TURMA1,'EM_REG_D_1','Seleção de matriz REG deve persistir no schema v8.');
+assert(selected.auditTrail.some(e=>e.type==='regular_matrix_override'&&e.target==='TURMA1'&&e.legacy),'Escolha sem auditoria anterior deve ser sinalizada como legado.');
+const invalidMatrix={...audited,regularMatrixByClass:{TURMA1:'EM_INT_1'}};
+assert.throws(()=>ctx.validateConfig(invalidMatrix),/Matriz regular por turma inválida/,'Seleção de matriz de outra modalidade deve ser rejeitada.');
 assert(src03.includes('Ajuste local, não fonte oficial.'),'Cálculo deve distinguir origem local de referência documental.');
 assert(src11.includes('calendar-remove-reason')&&src11.includes('calendar-remove-source'),'Exclusão de data deve solicitar motivo e fonte.');
 assert(src11.includes('calendar-add-reason')&&src11.includes('calendar-add-source'),'Reposição deve solicitar motivo e fonte.');
