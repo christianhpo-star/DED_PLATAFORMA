@@ -16,7 +16,7 @@ function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON
 function setRegularMatrixForClass(classId,bucket,audit){
  const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
- if(!row||!profile?.isReg||!new RegExp(`^EM_REG(?:_D)?_${profile.year}'use strict';
+ if(!row||!profile?.isReg||!profile.bucket.startsWith('EM_REG_')||!new RegExp(`^EM_REG(?:_D)?_${profile.year}'use strict';
 let loadWarning='';cfg=defaultConfig();
 try{const embedded=JSON.parse(document.getElementById('embedded-config').textContent);if(embedded&&embedded.version)cfg=validateConfig(embedded);}catch(e){loadWarning='A configura\u00e7\u00e3o incorporada n\u00e3o p\u00f4de ser lida. Foram usadas as refer\u00eancias originais.';}
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
