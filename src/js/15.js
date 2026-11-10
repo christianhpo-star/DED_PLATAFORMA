@@ -27,7 +27,7 @@ function nextImportPaint(){return new Promise(resolve=>requestAnimationFrame(()=
 function importRecoveryHint(message){
  const m=normalize(message||'');
  if(m.includes('cabecalho')||m.includes('relatorio de lancamentos'))return 'Próximo passo: selecione o Relatório de Lançamentos do Professor em formato XLSX, sem alterar os cabeçalhos.';
- if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira no arquivo se REG está no turno NOITE e INT no turno INTEGRAL.';
+ if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira se a oferta integral está corretamente identificada; turmas REG podem ser diurnas ou noturnas e sua matriz deve ser conferida em Configurações.';
  if(m.includes('xlsx valido')||m.includes('estrutura zip')||m.includes('xml interno'))return 'Próximo passo: gere novamente o XLSX no sistema de origem e tente com o arquivo sem edição intermediária.';
  if(m.includes('guardar')||m.includes('salv')||m.includes('armazen'))return 'Próximo passo: libere espaço do navegador ou exporte uma cópia/backup antes de tentar novamente.';
  return 'Próximo passo: confira o arquivo e os dados indicados na mensagem; a base atual não foi alterada.';
