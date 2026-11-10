@@ -76,7 +76,7 @@ function closeAuditDialog(){
 // A matriz curricular e escolhida pela escola, com fonte e justificativa, antes de alterar calculos.
 // Toda troca manual de matriz REG altera o previsto e exige fonte e justificativa.
 function requestRegularMatrixChange(classId,bucket){
- const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const row=regularMatrixClassRows().find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
  if(!row||!profile?.bucket.startsWith('EM_REG_')||!new RegExp('^EM_REG(?:_D)?_'+profile.year+'$').test(bucket)){toast('Matriz regular incompatível com a turma.');render();return;}
  const current=regularMatrixBucket(row,profile);
