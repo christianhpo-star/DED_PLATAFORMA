@@ -24,8 +24,24 @@ function reclassifyRowsForCurrentConfig(){
  for(const records of collections)normalizeEmbeddedRows(records);
  rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
 }
+// Preserva turmas REG visiveis apenas em snapshots antigos para revisar a matriz de seus diarios.
+function regularMatrixClassRows(){
+ const active=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])];
+ const activeIds=new Set(active.map(r=>String(r.cod_turma||'')));
+ const history=[...(dataStore.weeklySnapshots||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+ const byClass=new Map();
+ for(const rows of [...history.map(s=>s.rows||[]),active]){
+  for(const r of rows){
+   const profile=classifySchoolProfile(r.shortClass||extractShortClass(r.turma),r.turno);
+   if(!profile.isReg||!profile.bucket.startsWith('EM_REG_')||!profile.year||profile.isInt||!r.cod_turma)continue;
+   const id=String(r.cod_turma);
+   byClass.set(id,{...r,profile,historyOnly:!activeIds.has(id)});
+  }
+ }
+ return [...byClass.values()].sort((a,b)=>String(a.shortClass||'').localeCompare(String(b.shortClass||''),'pt-BR',{numeric:true}));
+}
 function setRegularMatrixForClass(classId,bucket,audit){
- const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const row=regularMatrixClassRows().find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
  if(!row||!profile?.isReg||!profile.bucket.startsWith('EM_REG_')||!new RegExp('^EM_REG(?:_D)?_'+profile.year+'$').test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return false;}
  const reason=auditText(audit?.reason),source=auditText(audit?.source,500);
