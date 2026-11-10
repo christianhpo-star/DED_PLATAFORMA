@@ -24,6 +24,7 @@ function inject(scriptId,modify){
 }
 const regDay=syntheticRow('1001','1º EM REG 1','MANHÃ','001');
 const regNight=syntheticRow('1002','1º EM REG 2','NOITE','002');
+const historicalOnly=syntheticRow('1003','2º EM REG 3','TARDE','004');
 const fundamental=syntheticRow('2001','7º EF AF REG 1','TARDE','003');
 const sourceInject=inject('source-data',data=>{
  data.raw=[regDay,regNight,fundamental];
@@ -34,7 +35,7 @@ const sourceInject=inject('source-data',data=>{
 const weeklyInject=inject('embedded-data-store',store=>{
  store.t1=null;store.t2=null;
  store.weeklySnapshots=[
-  {date:'2026-09-18',intervalDays:0,daysToDate:0,fileName:'qa-semana-1.xlsx',importedAt:1,rows:[{...regDay,id:'w001'}]},
+  {date:'2026-09-18',intervalDays:0,daysToDate:0,fileName:'qa-semana-1.xlsx',importedAt:1,rows:[{...regDay,id:'w001'},{...historicalOnly,id:'w003'}]},
   {date:'2026-09-25',intervalDays:0,daysToDate:0,fileName:'qa-semana-2.xlsx',importedAt:2,rows:[{...regDay,id:'w002'}]}
  ];
  return store;
@@ -176,6 +177,31 @@ async function main(){
   assert.deepEqual(fromBackup.historical,['EM_REG_1','EM_REG_1'],
    'Restauracao de backup deve reclassificar tambem snapshots antigos.');
   console.log('PASS: restauração de backup mantém a matriz local e normaliza semanas históricas.');
+  // Turma presente apenas na semana antiga deve poder receber matriz documentada.
+  const oldClass=page.locator('select[data-regular-matrix="1003"]');
+  await oldClass.waitFor();
+  assert.equal(await oldClass.inputValue(),'EM_REG_D_2',
+   'Turma do historico deve sugerir matriz pelo turno e pelo ano.');
+  assert(await page.locator('select[data-regular-matrix="1003"]')
+   .locator('xpath=ancestor::tr').innerText().then(s=>s.includes('somente no histórico semanal')),
+   'Turma do historico deve estar explicitamente identificada.');
+  await oldClass.selectOption('EM_REG_2');
+  await page.locator('#regular-matrix-reason').fill('Turma do histórico - teste sintético');
+  await page.locator('#regular-matrix-source').fill('Fonte sintética para QA');
+  await page.locator('#regular-matrix-audit-form button[type="submit"]').click();
+  const historicalOnlyAfter=await page.evaluate(()=>({
+   cfg:window.DED.getConfig().regularMatrixByClass['1003'],
+   bucket:dataStore.weeklySnapshots[0].rows.find(r=>String(r.cod_turma)==='1003')?.bucket
+  }));
+  assert.equal(historicalOnlyAfter.cfg,'EM_REG_2');
+  assert.equal(historicalOnlyAfter.bucket,'EM_REG_2');
+  await page.reload({waitUntil:'load'});
+  await page.waitForFunction(()=>Boolean(window.DED));
+  assert.equal(await page.evaluate(()=>
+   dataStore.weeklySnapshots[0].rows.find(r=>String(r.cod_turma)==='1003')?.bucket),
+   'EM_REG_2','Turma histórica deve manter a matriz após recarregar.');
+  console.log('PASS: turma encontrada somente em semana histórica pode ter matriz auditada e persistente.');
+
   await page.setViewportSize({width:390,height:844});
   await page.locator('select[data-regular-matrix="1001"]').scrollIntoViewIfNeeded();
   assert(await page.locator('select[data-regular-matrix="1001"]').isVisible(),
