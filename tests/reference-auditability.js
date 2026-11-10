@@ -13,6 +13,7 @@ const src14=readLF(path.join(root,'src','js','14.js'));
 const src21=readLF(path.join(root,'src','js','21.js'));
 const src07=readLF(path.join(root,'src','js','07.js'));
 const src01=readLF(path.join(root,'src','js','01.js'));
+const src15=readLF(path.join(root,'src','js','15.js'));
 const html=readLF(path.join(root,'src','index.html'));
 
 const start=src02.indexOf('const defaultConfig = () =>');
@@ -71,6 +72,8 @@ assert(src21.includes("type:'regular_matrix_restore'"),'Restauracao geral de mat
 assert(src01.includes("profile.bucket.startsWith('EM_REG_')"),'Matriz REG de ensino medio nao pode ser aplicada a turmas do fundamental.');
 assert(!src07.includes('importsPageBase=importsPage'),'Tela de importacoes nao deve ser alterada por substituicao fragil de HTML.');
 assert(src07.includes('<h3>Regular · todas as matrizes</h3><div class="big number">${reg}</div>'),'Contagem REG deve refletir o numero real de turmas.');
+assert(src03.includes('for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows)'), 'Semanas anteriores precisam ser normalizadas após carregar matriz REG local.');
+assert(!src15.includes('se REG está no turno NOITE'), 'Erros de importação não devem exigir noite para todas as turmas REG.');
 assert(src03.includes('Ajuste local, não fonte oficial.'),'Cálculo deve distinguir origem local de referência documental.');
 assert(src11.includes('calendar-remove-reason')&&src11.includes('calendar-remove-source'),'Exclusão de data deve solicitar motivo e fonte.');
 assert(src11.includes('calendar-add-reason')&&src11.includes('calendar-add-source'),'Reposição deve solicitar motivo e fonte.');
