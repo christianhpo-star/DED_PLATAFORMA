@@ -408,7 +408,7 @@ function extractShortClass(turma){const raw=String(turma??'').trim(),parts=raw.s
 function technicalCourseKey(shortClass){const c=normalizeMatrixKey(shortClass);if(c.includes('AUTOMACAO INDUSTRIAL'))return 'AUTOMACAO_INDUSTRIAL';if(c.includes('DESENV DE SISTEMAS')||c.includes('DESENVOLVIMENTO DE SISTEMAS'))return 'DESENVOLVIMENTO_SISTEMAS';if(c.includes('FABRICACAO MECANICA'))return 'FABRICACAO_MECANICA';if(c.includes('QUIMICA PRODUCAO INDUSTRIAL')||(c.includes('QUIMICA')&&c.includes('PRODUCAO INDUSTRIAL')))return 'QUIMICA_PRODUCAO_INDUSTRIAL';if(c.includes('SISTEMAS DE ENERGIA RENOVAVEL'))return 'SISTEMAS_ENERGIA_RENOVAVEL';if(c.includes('INFORMATICA'))return 'INFORMATICA';if(c.includes('SEGURANCA DO TRABALHO'))return 'SEGURANCA_TRABALHO';return '';}
 function isBilingualComponent(component){return BILINGUAL_COMPONENTS.has(normalizeMatrixKey(component));}
 function classifySchoolProfile(shortClass,turno=''){const c=normalizeMatrixKey(shortClass),tNorm=normalizeMatrixKey(turno),courseKey=technicalCourseKey(c),suffix={AUTOMACAO_INDUSTRIAL:'AUT',DESENVOLVIMENTO_SISTEMAS:'DS',FABRICACAO_MECANICA:'FAB',QUIMICA_PRODUCAO_INDUSTRIAL:'QUI',SISTEMAS_ENERGIA_RENOVAVEL:'SER',INFORMATICA:'INFO',SEGURANCA_TRABALHO:'SEG'}[courseKey]||'';const isInt=/(^| )INT( |$)/.test(c)||tNorm.includes('INTEGRAL')||/(^| )EMTI( |$)/.test(c)||/(^| )EFTI( |$)/.test(c);const isNight=tNorm.includes('NOITE')||tNorm.includes('NOTURNO')||/(^| )NOITE( |$)/.test(c)||/(^| )NOTURNO( |$)/.test(c);const isReg=/(^| )REG( |$)/.test(c)||/(^| )REGULAR( |$)/.test(c)||!isInt;const isExplicitEF=c.includes('EF')||c.includes('FUNDAMENTAL');const efMatch=c.match(/\b([1-9])\s*(?:O|º|ª|A)?\s*(?:ANO)?\s*(?:EF|FUNDAMENTAL)\b/)||c.match(/\b([6-9])\s*(?:O|º|ª|A)?\b/);const emMatch=c.match(/^([123])\b/)||c.match(/\b([123])\s*(?:O|º|ª|A)?\s*(?:ANO)?\s*(?:EM|MEDIO)\b/);let year='',bucket='UNKNOWN',offer='UNKNOWN';if(efMatch&&(isExplicitEF||Number(efMatch[1])>=6)){year=efMatch[1];const yNum=Number(year);if(yNum>=6){bucket='EF_AF';offer=isInt?'EFTI':'FUNDAMENTAL_REGULAR';}else{bucket='EF_AI';offer=isInt?'EFTI_AI':'FUNDAMENTAL_REGULAR';}}else if(emMatch){year=emMatch[1];if(isInt){if(year==='1')bucket='EM_INT_1';else if(suffix)bucket=`EM_INT_${year}_${suffix}`;else bucket=`EM_INT_${year}`;offer=courseKey?'EMTI_TECNICO':'EMTI';}else{if(isNight){bucket=`EM_REG_${year}`;offer='REGULAR_NOTURNO';}else{bucket=`EM_REG_D_${year}`;offer='REGULAR_DIURNO';}}}return {year,isReg,isInt,courseKey,bucket,offer};}
-function regularMatrixBucket(r,profile){const selected=cfg?.regularMatrixByClass?.[String(r.cod_turma||'')];return profile.isReg&&profile.year&&new RegExp(`^EM_REG(?:_D)?_${profile.year}$`).test(selected||'')?selected:profile.bucket;}
+function regularMatrixBucket(r,profile){const selected=cfg?.regularMatrixByClass?.[String(r.cod_turma||'')];return profile.isReg&&profile.bucket.startsWith('EM_REG_')&&profile.year&&new RegExp(`^EM_REG(?:_D)?_${profile.year}$`).test(selected||'')?selected:profile.bucket;}
 const OFFICIAL_WEEKLY=Object.freeze({
  "EM_REG_1|LINGUA PORTUGUESA":4,"EM_REG_1|EDUCACAO FISICA":1,"EM_REG_1|ARTE":1,"EM_REG_1|LINGUA INGLESA":1,"EM_REG_1|MATEMATICA":4,"EM_REG_1|FISICA":1,"EM_REG_1|QUIMICA":1,"EM_REG_1|BIOLOGIA":1,"EM_REG_1|GEOGRAFIA":1,"EM_REG_1|HISTORIA":1,"EM_REG_1|SOCIOLOGIA":1,"EM_REG_1|FILOSOFIA":1,"EM_REG_1|EDUCACAO DIGITAL":1,"EM_REG_2|LINGUA PORTUGUESA":4,"EM_REG_2|EDUCACAO FISICA":1,"EM_REG_2|ARTE":1,"EM_REG_2|LINGUA INGLESA":1,"EM_REG_2|MATEMATICA":4,"EM_REG_2|FISICA":1,"EM_REG_2|QUIMICA":1,"EM_REG_2|BIOLOGIA":1,"EM_REG_2|GEOGRAFIA":1,"EM_REG_2|HISTORIA":1,"EM_REG_2|SOCIOLOGIA":1,"EM_REG_2|FILOSOFIA":1,"EM_REG_2|EDUCACAO DIGITAL":1,"EM_REG_3|LINGUA PORTUGUESA":4,"EM_REG_3|EDUCACAO FISICA":1,"EM_REG_3|ARTE":1,"EM_REG_3|LINGUA INGLESA":1,"EM_REG_3|MATEMATICA":4,"EM_REG_3|FISICA":1,"EM_REG_3|QUIMICA":1,"EM_REG_3|BIOLOGIA":1,"EM_REG_3|GEOGRAFIA":1,"EM_REG_3|HISTORIA":1,"EM_REG_3|SOCIOLOGIA":1,"EM_REG_3|FILOSOFIA":1,"EM_REG_3|EDUCACAO DIGITAL":1,"EM_REG_1|LEITURA E PROTAGONISMO":1,"EM_REG_1|CONEXOES MATEMATICAS":1,"EM_REG_2|PROJETO INTEGRADOR INOVACAO E SABERES EM SUSTENTABILIDADE":1,"EM_REG_2|PROJETO INTEGRADOR PRODUCAO CULTURAL E COMUNICACAO":1,"EM_REG_3|PROJETO INTEGRADOR INTERVENCAO CIDADA":1,"EM_REG_3|PROJETO INTEGRADOR SOLUCOES MATEMATICAS":1,
  "EM_REG_D_1|LINGUA PORTUGUESA":4,"EM_REG_D_1|LINGUA INGLESA":1,"EM_REG_D_1|ARTE":1,"EM_REG_D_1|EDUCACAO FISICA":2,"EM_REG_D_1|MATEMATICA":4,"EM_REG_D_1|FISICA":2,"EM_REG_D_1|QUIMICA":2,"EM_REG_D_1|BIOLOGIA":2,"EM_REG_D_1|GEOGRAFIA":2,"EM_REG_D_1|HISTORIA":1,"EM_REG_D_1|SOCIOLOGIA":1,"EM_REG_D_1|FILOSOFIA":1,"EM_REG_D_1|EDUCACAO DIGITAL":1,"EM_REG_D_1|LEITURA E PROTAGONISMO":3,"EM_REG_D_1|CONEXOES MATEMATICAS":3,
@@ -542,7 +542,7 @@ const defaultConfig = () => ({version:8,datasetId:DATA.datasetId,days:DATA.decla
 function auditText(value,max=1000){return String(value??'').trim().slice(0,max);}
 function auditIsoDate(d){return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&!Number.isNaN(Date.parse(d+'T00:00:00'))&&d.startsWith('2026-');}
 function auditEntryValid(e){
- return !!(e&&typeof e==='object'&&['calendar_add','calendar_remove','calendar_restore','weekly_override','weekly_restore'].includes(e.type)&&auditText(e.target,240)&&auditText(e.reason,1000)&&auditText(e.source,500)&&Number.isFinite(e.updatedAt)&&e.updatedAt>=0);
+ return !!(e&&typeof e==='object'&&['calendar_add','calendar_remove','calendar_restore','weekly_override','weekly_restore','regular_matrix_override','regular_matrix_restore'].includes(e.type)&&auditText(e.target,240)&&auditText(e.reason,1000)&&auditText(e.source,500)&&Number.isFinite(e.updatedAt)&&e.updatedAt>=0);
 }
 function legacyAuditEntry(type,target,value,updatedAt,originalValue=null){
  return {type,target,value:value??null,originalValue:originalValue??null,reason:'Ajuste existente antes da rastreabilidade obrigatória; justificativa original não registrada.',source:'Configuração local legada · fonte não registrada',updatedAt:Number(updatedAt)||0,legacy:true};
@@ -607,6 +607,10 @@ function validateConfig(obj) {
   for(const d of clean.calendarRemoved)if(!clean.auditTrail.some(e=>e.type==='calendar_remove'&&e.target===d))throw new Error('Data excluída sem rastreabilidade.');
  }
  clean.updatedAt=Number.isFinite(obj.updatedAt)&&obj.updatedAt>=0?obj.updatedAt:0;
+ // Selecoes feitas antes da auditoria recebem marca de legado, sem inventar fonte documental.
+ for(const [classId,bucket] of Object.entries(clean.regularMatrixByClass)){
+  if(!clean.auditTrail.some(e=>e.type==='regular_matrix_override'&&e.target===classId))clean.auditTrail.push(legacyAuditEntry('regular_matrix_override',classId,bucket,clean.updatedAt,null));
+ }
  if(incomingVersion<7){
   for(const [key,val] of Object.entries(clean.weekly)){
    if(!clean.weeklyAudit[key]){
@@ -639,16 +643,36 @@ function initialTrimester(){
 }
 const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
-function setRegularMatrixForClass(classId,bucket){
+function setRegularMatrixForClass(classId,bucket,audit){
  const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
- if(!row||!profile?.isReg||!new RegExp(`^EM_REG(?:_D)?_${profile.year}$`).test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return;}
+ if(!row||!profile?.isReg||!profile.bucket.startsWith('EM_REG_')||!new RegExp(`^EM_REG(?:_D)?_${profile.year}'use strict';
+let loadWarning='';cfg=defaultConfig();
+try{const embedded=JSON.parse(document.getElementById('embedded-config').textContent);if(embedded&&embedded.version)cfg=validateConfig(embedded);}catch(e){loadWarning='A configura\u00e7\u00e3o incorporada n\u00e3o p\u00f4de ser lida. Foram usadas as refer\u00eancias originais.';}
+try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
+// Reclassifica após ler as escolhas locais, mantendo o turno do DED como sugestão e não como imposição.
+normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
+function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
+function initialTrimester(){
+ if(dataStore.weeklySnapshots.length)return '3';
+ const t2=dataStore.t2===null?(DATA.raw||[]):dataStore.t2;if(t2.length)return '2';
+ const t1=dataStore.t1===null?(DATA.raw_t1||[]):dataStore.t1;if(t1.length)return '1';
+ const today=localIsoDate();if(today>='2026-09-10')return '3';if(today>='2026-05-21')return '2';return '1';
+}
+const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
+function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
+).test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return false;}
+ const reason=auditText(audit?.reason),source=auditText(audit?.source,500);
+ if(!reason||!source){toast('Informe justificativa e fonte para alterar a matriz curricular.');return false;}
+ const original=regularMatrixBucket(row,profile);
+ if(original===bucket){render();return true;}
  cfg.regularMatrixByClass[classId]=bucket;
+ appendAuditEvent({type:'regular_matrix_override',target:String(classId),value:bucket,originalValue:original,reason,source,updatedAt:Date.now()});
  const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
  for(const records of collections)normalizeEmbeddedRows(records);
- rebuildConsolidated();RAW=getActiveRaw();
- if(saveConfig())toast('Matriz da turma atualizada. A referência de cálculo foi recalculada localmente.');
- render();
+ rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+ if(saveConfig())toast('Matriz local atualizada e registrada no histórico, com fonte e justificativa.');
+ render();return true;
 }
 function schoolProfile(){return cfg.school||{name:'',city:'',sre:'',code:'',responsible:''};}
 function schoolName(){return schoolProfile().name||'Escola não configurada';}
@@ -856,11 +880,6 @@ function weeklyComparison(){
   return {...r,professor:responsibleTeacher(r),current,previous,delta,expected,minimum,missingToMinimum,ratio,met80,updated:delta!==null&&delta>0,regressed};
  });
 }
-// Comunica a regra corrigida sem confundir turno do DED com matriz curricular.
-const importsPageBase=importsPage;
-importsPage=function(){return importsPageBase()
- .replace(/<article class="quality-item"><h3>Regular · noturno<\/h3><div class="big number">\d+<\/div><p>Na escola, REG é aceito somente no turno NOITE e usa a matriz do Ensino Médio Noturno\.<\/p><\/article>/,'<article class="quality-item"><h3>Regular · todas as matrizes</h3><div class="big number">REG</div><p>REG pode ser manhã, tarde ou noite. A escola escolhe a matriz de cada turma em Configurações.</p></article>')
- .replace('INT/REG comparado com a coluna Turno.','Apenas turmas INT são conferidas com o turno INTEGRAL. REG é definido pela matriz escolhida.');};
 function weeklyTeacherGroups(rows=weeklyComparison()){
  const map=new Map();for(const r of rows){const name=r.professor||'RESPONSÁVEL A CONFIRMAR';if(!map.has(name))map.set(name,[]);map.get(name).push(r);}
  return [...map.entries()].map(([name,records])=>{const assessed=records.filter(r=>r.delta!==null&&r.minimum!==null),below=assessed.filter(r=>!r.met80),unassessed=records.filter(r=>r.delta===null||r.minimum===null);return {name,records,assessed,below,unassessed,compliant:assessed.length>0&&below.length===0&&unassessed.length===0};}).sort((a,b)=>b.below.length-a.below.length||a.name.localeCompare(b.name,'pt-BR'));
@@ -915,7 +934,7 @@ function importsPage(){
  const s1=dataStore.t1?`${dataStore.t1.length} registros · substituída neste navegador`:`${(DATA.raw_t1||[]).length} registros · pré-cadastrada no HTML`,s2=dataStore.t2?`${dataStore.t2.length} registros · substituída neste navegador`:`${(DATA.raw||[]).length} registros · pré-cadastrada no HTML`;
  const classes=[...new Map((DATA.raw||[]).map(r=>[r.cod_turma,r])).values()],reg=classes.filter(r=>/(^|\s)REG(\s|$)/.test(r.shortClass)).length,int=classes.filter(r=>/(^|\s)INT(\s|$)/.test(r.shortClass)).length,inconsistent=classes.filter(r=>/(^|\s)INT(\s|$)/.test(r.shortClass)&&normalize(r.turno)!=='integral').length;
  const card=(tri,id,status)=>`<article class="card"><div class="card-head"><div><h2>${tri}</h2><p class="sub">${status}</p></div>${badge('Prévia obrigatória','info')}</div><div class="card-body"><div class="field"><label for="${id}">Selecionar novo Relatório de Lançamentos (.xlsx)</label><input id="${id}" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></div><p class="setting-note">Selecionar o arquivo apenas prepara uma prévia. A base deste trimestre só é substituída depois de validação e confirmação explícita.</p></div></article>`;
- return `<div id="data-updates" class="notice neutral">${icon('info')}<div class="text"><strong>Central de atualização das bases.</strong> Aqui a EEB pode substituir os relatórios do 1º e do 2º trimestre após correções nos diários. Para o monitoramento semanal, use a área do 3º trimestre abaixo ou a aba “Acompanhamento semanal”.</div></div><div class="quality-grid"><article class="quality-item"><h3>Regular · noturno</h3><div class="big number">${reg}</div><p>Na escola, REG é aceito somente no turno NOITE e usa a matriz do Ensino Médio Noturno.</p></article><article class="quality-item"><h3>Integral profissional</h3><div class="big number">${int}</div><p>INT é validado no turno INTEGRAL; a referência depende da matriz, da coorte e do curso aplicável.</p></article><article class="quality-item"><h3>Divergências de modalidade</h3><div class="big number" style="color:${inconsistent?'var(--red)':'var(--teal)'}">${inconsistent}</div><p>INT/REG comparado com a coluna Turno.</p></article></div><div class="settings-grid">${card('1º trimestre','replace-t1-file',s1)}${card('2º trimestre','replace-t2-file',s2)}</div><section class="card"><div class="card-head"><div><h2>3º trimestre · acompanhamento semanal</h2><p class="sub">${dataStore.weeklySnapshots.length} atualização(ões) armazenada(s).</p></div>${btn('Abrir acompanhamento','nav','data-page="weekly"','btn-primary')}</div><div class="card-body"><p>A primeira planilha já é avaliada desde 10/09/2026. Nas seguintes, o painel compara o acréscimo de lançamentos desde a extração anterior e aplica o mínimo de 80% por diário.</p></div></section><section class="card" id="data-backup"><div class="card-head"><div><h2>Backup e restauração</h2><p class="sub">Guarde ou restaure as bases locais com prévia e confirmação.</p></div><div class="inline-actions">${btn(icon('download')+' Baixar backup JSON','export-data-backup','','btn-primary')}${btn(icon('upload')+' Restaurar backup','restore-data-backup')}</div></div><div class="card-body"><p class="setting-note">O backup contém T1, T2, histórico semanal e referências descobertas nas planilhas. Na restauração, versão e dataset são validados; a base atual é preservada para desfazer. Parâmetros e identificação da escola não são substituídos.</p></div></section>`;
+ return `<div id="data-updates" class="notice neutral">${icon('info')}<div class="text"><strong>Central de atualização das bases.</strong> Aqui a EEB pode substituir os relatórios do 1º e do 2º trimestre após correções nos diários. Para o monitoramento semanal, use a área do 3º trimestre abaixo ou a aba “Acompanhamento semanal”.</div></div><div class="quality-grid"><article class="quality-item"><h3>Regular · todas as matrizes</h3><div class="big number">${reg}</div><p>Turmas REG podem funcionar de manhã, à tarde ou à noite. Confirme a matriz por turma em Configurações.</p></article><article class="quality-item"><h3>Integral profissional</h3><div class="big number">${int}</div><p>INT é validado no turno INTEGRAL; a referência depende da matriz, da coorte e do curso aplicável.</p></article><article class="quality-item"><h3>Divergências de modalidade</h3><div class="big number" style="color:${inconsistent?'var(--red)':'var(--teal)'}">${inconsistent}</div><p>Turmas INT são conferidas com o turno INTEGRAL; a matriz REG é confirmada por turma.</p></article></div><div class="settings-grid">${card('1º trimestre','replace-t1-file',s1)}${card('2º trimestre','replace-t2-file',s2)}</div><section class="card"><div class="card-head"><div><h2>3º trimestre · acompanhamento semanal</h2><p class="sub">${dataStore.weeklySnapshots.length} atualização(ões) armazenada(s).</p></div>${btn('Abrir acompanhamento','nav','data-page="weekly"','btn-primary')}</div><div class="card-body"><p>A primeira planilha já é avaliada desde 10/09/2026. Nas seguintes, o painel compara o acréscimo de lançamentos desde a extração anterior e aplica o mínimo de 80% por diário.</p></div></section><section class="card" id="data-backup"><div class="card-head"><div><h2>Backup e restauração</h2><p class="sub">Guarde ou restaure as bases locais com prévia e confirmação.</p></div><div class="inline-actions">${btn(icon('download')+' Baixar backup JSON','export-data-backup','','btn-primary')}${btn(icon('upload')+' Restaurar backup','restore-data-backup')}</div></div><div class="card-body"><p class="setting-note">O backup contém T1, T2, histórico semanal e referências descobertas nas planilhas. Na restauração, versão e dataset são validados; a base atual é preservada para desfazer. Parâmetros e identificação da escola não são substituídos.</p></div></section>`;
 }
 
 </script><script>
@@ -1081,23 +1100,21 @@ function settingsPage(){
  const p=schoolProfile(),added=cfg.calendarAdded||[],removed=cfg.calendarRemoved||[],total=trimesterDays('1')+trimesterDays('2')+trimesterDays('3');
  return `<section class="card" id="settings-school"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">IDENTIFICAÇÃO DA UNIDADE</div><h2>${esc(schoolName())}</h2><p class="sub">Configuração local; não é enviada para a internet.</p></div>${badge(p.name?'Configurada':'Pendente',p.name?'good':'warn')}</div><div class="card-body"><div class="small-grid"><div class="field"><label for="school-name">Nome da escola</label><input id="school-name" value="${esc(p.name)}" placeholder="Ex.: EE Exemplo"></div><div class="field"><label for="school-code">Código</label><input id="school-code" value="${esc(p.code)}"></div><div class="field"><label for="school-city">Município</label><input id="school-city" value="${esc(p.city)}"></div><div class="field"><label for="school-sre">SRE</label><input id="school-sre" value="${esc(p.sre)}"></div><div class="field"><label for="school-responsible">Responsável pelo painel</label><input id="school-responsible" value="${esc(p.responsible)}"></div></div><div class="inline-actions" style="margin-top:16px">${btn(icon('save')+' Salvar identificação','save-school','','btn-primary')}</div></div></section>
  <section class="card" id="settings-calendar"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">CALENDÁRIO 2026</div><h2>Dias letivos efetivos usados no cálculo</h2><p class="sub">O modelo estadual pode ser adaptado a feriados municipais e recomposições homologadas.</p></div>${badge(total+' dias efetivos',total===200?'good':'warn')}</div><div class="card-body"><div class="quality-grid" style="margin:0"><article class="quality-item"><h3>1º trimestre</h3><div class="big number">${trimesterDays('1')} DL</div><p>04/02 a 20/05.</p></article><article class="quality-item"><h3>2º trimestre</h3><div class="big number">${trimesterDays('2')} DL</div><p>21/05 a 09/09.</p></article><article class="quality-item"><h3>3º trimestre</h3><div class="big number">${trimesterDays('3')} DL</div><p>10/09 a 18/12.</p></article></div><div class="formula"><strong>Previstas = A/S documentada × dias letivos efetivos ÷ 5</strong><br>Aproximação gerencial; para precisão por componente, confira o horário real.</div><div class="small-grid" style="margin-top:18px"><div class="form-block" style="margin:0"><h3>Excluir data do modelo</h3><p class="sub">Use para feriado/evento local não contemplado no modelo.</p><div class="field" style="margin-top:12px"><label for="calendar-remove-date">Data</label><input id="calendar-remove-date" type="date" min="2026-01-01" max="2026-12-31"></div><div class="field"><label for="calendar-remove-reason">Motivo</label><textarea id="calendar-remove-reason" maxlength="1000" placeholder="Ex.: feriado municipal previsto no calendário homologado."></textarea></div><div class="field"><label for="calendar-remove-source">Fonte / referência</label><input id="calendar-remove-source" maxlength="500" placeholder="Ex.: calendário homologado da escola / orientação SRE"></div><div class="inline-actions" style="margin-top:12px">${btn('Excluir data','calendar-remove')}</div></div><div class="form-block" style="margin:0"><h3>Adicionar recomposição</h3><p class="sub">Inclua apenas data aprovada/homologada pela escola/SRE.</p><div class="field" style="margin-top:12px"><label for="calendar-add-date">Data</label><input id="calendar-add-date" type="date" min="2026-01-01" max="2026-12-31"></div><div class="field"><label for="calendar-add-reason">Motivo</label><textarea id="calendar-add-reason" maxlength="1000" placeholder="Ex.: reposição aprovada para recompor dia letivo."></textarea></div><div class="field"><label for="calendar-add-source">Fonte / referência</label><input id="calendar-add-source" maxlength="500" placeholder="Ex.: reposição aprovada / orientação SRE / calendário homologado"></div><div class="inline-actions" style="margin-top:12px">${btn('Adicionar data','calendar-add')}</div></div></div>${calendarAuditPanel(added,removed)}${(added.length||removed.length)?`<div class="inline-actions" style="margin-top:12px">${btn('Restaurar calendário-base','calendar-clear','','btn-small btn-quiet')}</div>`:''}</div></section>
- <section class="card matrix-source-card" id="settings-matrix"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MODALIDADE, COORTE E FONTE</div><h2>Referência curricular não é deduzida do DED</h2><p class="sub">Regular noturno, EMTI, cursos técnicos, coortes em continuidade e oferta bilíngue são dimensões distintas e podem se combinar.</p></div>${badge('Regra de segurança','info')}</div><div class="card-body"><div class="quality-grid" style="margin:0"><article class="quality-item"><h3>REG · noturno</h3><div class="big number">2026</div><p>Usa a matriz noturna aplicável em 2026.</p></article><article class="quality-item"><h3>EMTI · entrada 2026</h3><div class="big number">45 A/S</div><p>Referência da Resolução SEE nº 5.212/2025 quando aplicável à coorte.</p></article><article class="quality-item"><h3>EMTI · continuidade</h3><div class="big number">Fonte</div><p>Exige matriz/grade da coorte ou horário homologado. Sem fonte, fica sem previsão.</p></article><article class="quality-item"><h3>Oferta bilíngue</h3><div class="big number">Perfil</div><p>É identificada pelos componentes interculturais/bilíngues. A carga específica não é inferida por analogia.</p></article></div><p class="setting-note"><strong>Importante:</strong> blocos de Formação Técnica Específica sem componentes/cargas discriminados não autorizam completar valores por analogia.</p></div></section>
+ ${regularMatrixAssignmentPanel()}<section class="card matrix-source-card" id="settings-matrix"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MODALIDADE, COORTE E FONTE</div><h2>Referência curricular não é deduzida do DED</h2><p class="sub">Regular diurno e noturno, EMTI, cursos técnicos, coortes em continuidade e oferta bilíngue são dimensões distintas e podem se combinar.</p></div>${badge('Regra de segurança','info')}</div><div class="card-body"><div class="quality-grid" style="margin:0"><article class="quality-item"><h3>REG · diurno/noturno</h3><div class="big number">2026</div><p>A escola confirma a matriz aplicável a cada turma; o turno do DED é apenas uma sugestão.</p></article><article class="quality-item"><h3>EMTI · entrada 2026</h3><div class="big number">45 A/S</div><p>Referência da Resolução SEE nº 5.212/2025 quando aplicável à coorte.</p></article><article class="quality-item"><h3>EMTI · continuidade</h3><div class="big number">Fonte</div><p>Exige matriz/grade da coorte ou horário homologado. Sem fonte, fica sem previsão.</p></article><article class="quality-item"><h3>Oferta bilíngue</h3><div class="big number">Perfil</div><p>É identificada pelos componentes interculturais/bilíngues. A carga específica não é inferida por analogia.</p></article></div><p class="setting-note"><strong>Importante:</strong> blocos de Formação Técnica Específica sem componentes/cargas discriminados não autorizam completar valores por analogia.</p></div></section>
  <span id="settings-responsible" class="section-anchor-marker" aria-hidden="true"></span>${conflicts.length?`<section class="card"><div class="card-head"><div><h2>Professor responsável atual</h2><p class="sub">O consolidado usa o professor do 2º trimestre. Quando o próprio relatório traz dois nomes para a mesma turma e componente, o total é contado uma única vez e o responsável precisa ser confirmado.</p></div>${badge(`${unresolved.length} pendente(s)`,unresolved.length?'warn':'good')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma / componente</th><th>Nomes encontrados no 2º trimestre</th><th>Responsável atual</th><th>Situação</th></tr></thead><tbody>${conflictRows}</tbody></table></div><div class="card-foot"><span>Selecionar um nome não altera o DED; apenas define quem aparece como responsável neste painel.</span></div></section>`:''}
  <div class="notice neutral">${icon('info')}<div class="text"><strong>Regra de consolidação:</strong> turma + componente forma um único diário lógico. Se o professor mudou entre trimestres, o consolidado atribui a responsabilidade ao professor presente no 2º trimestre. Duplicidades idênticas dentro do mesmo trimestre nunca são somadas duas vezes.</div></div>
- <section class="card"><div class="card-head"><div><h2>Carga semanal por turma curricular e componente</h2><p class="sub">Somente referências documentadas são incorporadas. Campos vazios permanecem fora do cálculo comparável.</p></div><div class="field"><label class="sr-only" for="reference-group">Matriz</label><select id="reference-group"><option value="all">Todas as matrizes</option>${Object.entries(refLabels).map(([k,v])=>`<option value="${k}" ${state.referenceGroup===k?'selected':''}>${esc(v)}</option>`).join('')}</select></div></div><div class="table-wrap reference-scroll"><table class="data-table"><thead><tr><th>Turma curricular</th><th>Componente</th><th>A/S</th><th>Origem</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="muted">Importe uma planilha para listar os componentes da escola.</td></tr>'}</tbody></table></div><div class="card-foot"><span>REG/NOITE e INT/INTEGRAL são validados na importação; curso técnico e perfil bilíngue são classificados separadamente.</span></div></section>
+ <section class="card"><div class="card-head"><div><h2>Carga semanal por turma curricular e componente</h2><p class="sub">Somente referências documentadas são incorporadas. Campos vazios permanecem fora do cálculo comparável.</p></div><div class="field"><label class="sr-only" for="reference-group">Matriz</label><select id="reference-group"><option value="all">Todas as matrizes</option>${Object.entries(refLabels).map(([k,v])=>`<option value="${k}" ${state.referenceGroup===k?'selected':''}>${esc(v)}</option>`).join('')}</select></div></div><div class="table-wrap reference-scroll"><table class="data-table"><thead><tr><th>Turma curricular</th><th>Componente</th><th>A/S</th><th>Origem</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="muted">Importe uma planilha para listar os componentes da escola.</td></tr>'}</tbody></table></div><div class="card-foot"><span>INT/INTEGRAL é conferido na importação; a matriz REG é escolhida e documentada por turma; curso técnico e perfil bilíngue são classificados separadamente.</span></div></section>
  ${auditTrailPanel()}
  <section class="card"><div class="card-head"><div><h2>Guardar e levar os ajustes</h2><p class="sub">Configurações e dados permanecem locais.</p></div></div><div class="card-body"><div class="inline-actions">${btn(icon('save')+' Salvar cópia HTML','save-html','','btn-primary')}${btn(icon('download')+' Exportar parâmetros','export-config')}${btn(icon('upload')+' Importar parâmetros','import-config')}</div><p class="setting-note">Use “Salvar cópia HTML” para levar junto as planilhas incorporadas e os ajustes locais. Não publique cópias preenchidas em repositório público.</p></div></section>`;
 }
 // Seletor rápido: deixa explícita a escolha entre as matrizes regulares, sem forçar turmas da tarde para o noturno.
 function regularMatrixAssignmentPanel(){
- const seen=new Map();for(const r of [...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])]){const profile=classifySchoolProfile(r.shortClass,r.turno);if(profile.isReg&&profile.year&&!profile.isInt)seen.set(String(r.cod_turma),{...r,profile});}
+ const seen=new Map();for(const r of [...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])]){const profile=classifySchoolProfile(r.shortClass,r.turno);if(profile.isReg&&profile.bucket.startsWith('EM_REG_')&&profile.year&&!profile.isInt)seen.set(String(r.cod_turma),{...r,profile});}
  const classes=[...seen.values()].sort((a,b)=>a.shortClass.localeCompare(b.shortClass,'pt-BR'));
  if(!classes.length)return '';
  const body=classes.map(r=>{const year=r.profile.year,selected=cfg.regularMatrixByClass?.[String(r.cod_turma)]||r.bucket,diurno=`EM_REG_D_${year}`,noturno=`EM_REG_${year}`;return `<tr><td><strong>${esc(r.shortClass)}</strong><small class="record-info">Código ${esc(r.cod_turma)} · turno no DED: ${esc(r.turno||'não informado')}</small></td><td><select data-regular-matrix="${esc(r.cod_turma)}"><option value="${diurno}" ${selected===diurno?'selected':''}>Regular diurno · manhã/tarde</option><option value="${noturno}" ${selected===noturno?'selected':''}>Regular noturno · noite</option></select></td></tr>`;}).join('');
- return `<section class="card"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MATRIZ REGULAR POR TURMA</div><h2>Confirme a matriz de cada turma regular</h2><p class="sub">O turno do DED sugere a seleção inicial; manhã e tarde usam a opção diurna. A escola pode ajustar a referência por turma.</p></div>${badge(classes.length+' turma(s)','info')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma</th><th>Matriz aplicável</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+ return `<section class="card"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MATRIZ REGULAR POR TURMA</div><h2>Confirme a matriz de cada turma regular</h2><p class="sub">O turno do DED sugere a seleção inicial; manhã e tarde usam a opção diurna. Toda alteração exige confirmação, justificativa e fonte, registradas no histórico.</p></div>${badge(classes.length+' turma(s)','info')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma</th><th>Matriz aplicável</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
 }
-const settingsPageBase=settingsPage;
-settingsPage=function(){return settingsPageBase().replace('<section class="card matrix-source-card"',regularMatrixAssignmentPanel()+'<section class="card matrix-source-card"');};
 
 </script><script>
 /* js/12.js */
@@ -1266,7 +1283,7 @@ document.addEventListener('change',async e=>{
  else if(el.id==='compare-a'){state.comparisonA=el.value;render();}
  else if(el.id==='compare-b'){state.comparisonB=el.value;render();}
  else if(el.id==='reference-group'){state.referenceGroup=el.value;render();}
- else if(el.dataset.regularMatrix){setRegularMatrixForClass(el.dataset.regularMatrix,el.value);}
+ else if(el.dataset.regularMatrix){requestRegularMatrixChange(el.dataset.regularMatrix,el.value);}
  else if(el.dataset.teacherOverride){const key=el.dataset.teacherOverride,raw=el.value;if(raw)cfg.teacherOverrides[key]=raw;else delete cfg.teacherOverrides[key];if(saveConfig())toast(raw?'Professor responsável definido para o consolidado.':'Responsável voltou a ficar pendente.');render();}
  else if(el.dataset.reference){const key=el.dataset.reference;const raw=el.value.trim();const val=raw===''?null:Number(raw);if(!el.reportValidity()||(val!==null&&(!integer(val)||val<0||val>45))){toast('Carga semanal inválida. Informe um inteiro entre 0 e 45, ou deixe vazio.');el.value=weeklyFor({refKey:key})??'';return;}requestWeeklyReferenceChange(key,val);}
  else if(el.id==='replace-t1-file'||el.id==='replace-t2-file'){const file=el.files?.[0];if(!file)return;try{await queueSafeImport(file,el.id==='replace-t1-file'?'1':'2');}finally{el.value='';}}
@@ -1857,6 +1874,7 @@ window.DED_FILTER_UX=Object.freeze({activeFilterDescriptors,filterFieldUseful,re
 // Rastreabilidade dos ajustes locais que alteram o cálculo do previsto.
 let pendingWeeklyAudit=null;
 let pendingCalendarAudit=null;
+let pendingRegularMatrixAudit=null;
 
 function auditWhen(ts){
  const n=Number(ts);if(!n)return 'data não registrada';
@@ -1878,7 +1896,7 @@ function appendAuditEvent(event){
 }
 function weeklyAuditMeta(key){return cfg.weeklyAudit?.[key]||null;}
 function auditTypeLabel(type){
- return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada'}[type]||type;
+ return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada',regular_matrix_override:'Matriz REG ajustada',regular_matrix_restore:'Matriz REG restaurada'}[type]||type;
 }
 function originalWeeklyLabel(value){return value===null||value===undefined?'sem referência documental':moneyless(value)+' A/S';}
 function referenceOriginCell(key,ref,value){
@@ -1914,7 +1932,7 @@ function calendarAuditPanel(added,removed){
 function auditTrailPanel(){
  const trail=(cfg.auditTrail||[]).slice().reverse();
  if(!trail.length)return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Nenhum ajuste auditável foi registrado.</p></div>'+badge('Sem alterações','good')+'</div></section>';
- return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
+ return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário, matrizes REG e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
   trail.slice(0,100).map(e=>'<tr><td>'+badge(auditTypeLabel(e.type),e.type.includes('restore')?'good':e.legacy?'warn':'info')+'</td><td>'+esc(e.target)+'</td><td>'+esc(e.reason)+'</td><td>'+esc(e.source)+(e.legacy?'<small>Registro legado; fonte original não comprovada.</small>':'')+'</td><td>'+esc(auditWhen(e.updatedAt))+'</td></tr>').join('')+
   '</tbody></table></div></details></section>';
 }
@@ -1924,8 +1942,109 @@ function rerenderSettingsPreservingReferenceScroll(){
  const wrap=document.querySelector('.reference-scroll');if(wrap)wrap.scrollTop=sc;
 }
 function closeAuditDialog(){
- pendingWeeklyAudit=null;pendingCalendarAudit=null;
+ pendingWeeklyAudit=null;pendingCalendarAudit=null;pendingRegularMatrixAudit=null;
  const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
+}
+// A matriz curricular e escolhida pela escola, com fonte e justificativa, antes de alterar calculos.
+function requestRegularMatrixChange(classId,bucket){
+ const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
+ if(!row||!profile?.bucket.startsWith('EM_REG_')||!new RegExp(`^EM_REG(?:_D)?_${profile.year}'use strict';
+// Rastreabilidade dos ajustes locais que alteram o cálculo do previsto.
+let pendingWeeklyAudit=null;
+let pendingCalendarAudit=null;
+let pendingRegularMatrixAudit=null;
+
+function auditWhen(ts){
+ const n=Number(ts);if(!n)return 'data não registrada';
+ const d=new Date(n);return Number.isNaN(d.getTime())?'data não registrada':d.toLocaleString('pt-BR');
+}
+function appendAuditEvent(event){
+ cfg.auditTrail=Array.isArray(cfg.auditTrail)?cfg.auditTrail:[];
+ cfg.auditTrail.push({
+  type:event.type,
+  target:auditText(event.target,240),
+  value:event.value??null,
+  originalValue:event.originalValue??null,
+  reason:auditText(event.reason),
+  source:auditText(event.source,500),
+  updatedAt:Number(event.updatedAt)||Date.now(),
+  legacy:!!event.legacy
+ });
+ if(cfg.auditTrail.length>1500)cfg.auditTrail=cfg.auditTrail.slice(-1500);
+}
+function weeklyAuditMeta(key){return cfg.weeklyAudit?.[key]||null;}
+function auditTypeLabel(type){
+ return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada',regular_matrix_override:'Matriz REG ajustada',regular_matrix_restore:'Matriz REG restaurada'}[type]||type;
+}
+function originalWeeklyLabel(value){return value===null||value===undefined?'sem referência documental':moneyless(value)+' A/S';}
+function referenceOriginCell(key,ref,value){
+ const custom=Object.hasOwn(cfg.weekly,key),meta=weeklyAuditMeta(key);
+ if(!custom)return badge(value===null?'Sem referência documental':'Referência documental',value===null?'warn':'good')+'<div class="source-text">'+esc(ref.source||'Fonte documental não informada.')+'</div>';
+ const original=meta?.originalWeekly??ref.weekly??null;
+ const legacy=!!meta?.legacy;
+ return badge('Ajuste local','info')+
+  '<div class="source-text"><strong>Valor usado:</strong> '+esc(value===null?'sem referência local':moneyless(value)+' A/S')+
+  ' · <strong>original:</strong> '+esc(originalWeeklyLabel(original))+'</div>'+
+  '<details class="reference-audit-details"><summary>Ver rastreabilidade</summary><div><p><strong>Fonte informada:</strong> '+esc(meta?.source||'não registrada')+'</p><p><strong>Justificativa:</strong> '+esc(meta?.reason||'não registrada')+'</p><p><strong>Alterado em:</strong> '+esc(auditWhen(meta?.updatedAt))+'</p>'+
+  (legacy?'<p>'+badge('Legado sem rastreabilidade completa','warn')+'</p>':'')+
+  '<p class="audit-warning">Este ajuste é local e não transforma a fonte informada em referência oficial.</p>'+
+  btn('Restaurar valor documental','restore-weekly-reference','data-reference-key="'+esc(key)+'"','btn-small btn-quiet')+'</div></details>';
+}
+function auditLatestForCalendar(type,date){
+ const targetType=type==='add'?'calendar_add':'calendar_remove';
+ return (cfg.auditTrail||[]).slice().reverse().find(e=>e.type===targetType&&e.target===date)||null;
+}
+function calendarAuditPanel(added,removed){
+ const active=[
+  ...removed.map(date=>({date,type:'remove',audit:auditLatestForCalendar('remove',date)})),
+  ...added.map(date=>({date,type:'add',audit:auditLatestForCalendar('add',date)}))
+ ].sort((a,b)=>a.date.localeCompare(b.date));
+ if(!active.length)return '<div class="audit-empty">'+icon('check')+'<span>Nenhum ajuste local ativo no calendário.</span></div>';
+ return '<div class="calendar-audit-list"><div class="audit-list-head"><strong>Ajustes locais ativos</strong><span>Alteram os dias usados no cálculo do previsto.</span></div>'+
+  active.map(item=>{
+   const a=item.audit;
+   return '<article class="calendar-audit-item"><div><strong>'+esc(formatDateBR(item.date))+'</strong>'+badge(item.type==='add'?'Adicionada localmente':'Excluída localmente',item.type==='add'?'info':'warn')+'</div>'+
+    '<p><strong>Motivo:</strong> '+esc(a?.reason||'não registrado')+'</p><p><strong>Fonte:</strong> '+esc(a?.source||'não registrada')+'</p><p><strong>Alteração:</strong> '+esc(auditWhen(a?.updatedAt))+(a?.legacy?' · legado':'')+'</p></article>';
+  }).join('')+'</div>';
+}
+function auditTrailPanel(){
+ const trail=(cfg.auditTrail||[]).slice().reverse();
+ if(!trail.length)return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Nenhum ajuste auditável foi registrado.</p></div>'+badge('Sem alterações','good')+'</div></section>';
+ return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário, matrizes REG e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
+  trail.slice(0,100).map(e=>'<tr><td>'+badge(auditTypeLabel(e.type),e.type.includes('restore')?'good':e.legacy?'warn':'info')+'</td><td>'+esc(e.target)+'</td><td>'+esc(e.reason)+'</td><td>'+esc(e.source)+(e.legacy?'<small>Registro legado; fonte original não comprovada.</small>':'')+'</td><td>'+esc(auditWhen(e.updatedAt))+'</td></tr>').join('')+
+  '</tbody></table></div></details></section>';
+}
+function rerenderSettingsPreservingReferenceScroll(){
+ const y=window.scrollY,sc=document.querySelector('.reference-scroll')?.scrollTop||0;
+ render();window.scrollTo({top:y,behavior:'instant'});
+ const wrap=document.querySelector('.reference-scroll');if(wrap)wrap.scrollTop=sc;
+}
+function closeAuditDialog(){
+ pendingWeeklyAudit=null;pendingCalendarAudit=null;pendingRegularMatrixAudit=null;
+ const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
+}
+).test(bucket)){toast('Matriz regular incompatível com a turma.');render();return;}
+ const current=regularMatrixBucket(row,profile);
+ if(bucket===current){render();return;}
+ pendingRegularMatrixAudit={classId,bucket,current};
+ const label=value=>value.startsWith('EM_REG_D_')?'Regular diurno':'Regular noturno';
+ const d=document.getElementById('confirm-dialog');
+ d.innerHTML='<form id="regular-matrix-audit-form"><div class="dialog-head"><div><div class="eyebrow muted">MATRIZ REGULAR POR TURMA</div><h2 id="confirm-title">'+esc(row.shortClass)+'</h2></div>'+btn(icon('close'),'cancel-audit-dialog','aria-label="Cancelar"','icon-btn')+'</div>'+
+  '<div class="dialog-body"><p><strong>Atual:</strong> '+esc(label(current))+' · <strong>Nova:</strong> '+esc(label(bucket))+'</p>'+
+  '<div class="notice warning tight">'+icon('info')+'<div class="text">A mudança afeta as aulas previstas. É uma escolha local, não uma nova referência oficial.</div></div>'+
+  '<div class="field"><label for="regular-matrix-reason">Justificativa</label><textarea id="regular-matrix-reason" maxlength="1000" required placeholder="Informe o motivo da escolha da matriz."></textarea></div>'+
+  '<div class="field"><label for="regular-matrix-source">Fonte / referência</label><input id="regular-matrix-source" maxlength="500" required placeholder="Ex.: matriz adotada pela escola, horário homologado."></div></div>'+
+  '<div class="dialog-foot"><span></span><div class="inline-actions">'+btn('Cancelar','cancel-audit-dialog')+'<button type="submit" class="btn btn-primary">Confirmar matriz</button></div></div></form>';
+ if(d.open)d.close();d.showModal();
+}
+function applyRegularMatrixChange(){
+ if(!pendingRegularMatrixAudit)return;
+ const reason=auditText(document.getElementById('regular-matrix-reason')?.value),source=auditText(document.getElementById('regular-matrix-source')?.value,500);
+ if(!reason||!source){toast('Informe justificativa e fonte.');return;}
+ const {classId,bucket}=pendingRegularMatrixAudit;
+ closeAuditDialog();
+ setRegularMatrixForClass(classId,bucket,{reason,source});
 }
 function requestWeeklyReferenceChange(key,value){
  const ref=DATA.refs[key];if(!ref)return;
@@ -2006,19 +2125,23 @@ function restoreCalendarModel(){
 }
 function resetCalculationReferencesAudited(){
  const oldWeekly={...(cfg.weekly||{})},oldWeeklyAudit={...(cfg.weeklyAudit||{})},oldAdded=[...(cfg.calendarAdded||[])],oldRemoved=[...(cfg.calendarRemoved||[])],trail=[...(cfg.auditTrail||[])],now=Date.now();
+ const oldRegular={...(cfg.regularMatrixByClass||{})};
  const preserved={school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};
  cfg=defaultConfig();cfg.school=preserved.school;cfg.gradeOverrides=preserved.gradeOverrides;cfg.teacherOverrides=preserved.teacherOverrides;cfg.auditTrail=trail;
  for(const [key,value] of Object.entries(oldWeekly)){
   const original=DATA.refs[key]?.weekly??oldWeeklyAudit[key]?.originalWeekly??null;
   appendAuditEvent({type:'weekly_restore',target:key,value:original,originalValue:value,reason:'Restauração geral das referências incorporadas.',source:DATA.refs[key]?.source||'Referência documental incorporada no template.',updatedAt:now});
  }
+ for(const [classId,bucket] of Object.entries(oldRegular))appendAuditEvent({type:'regular_matrix_restore',target:classId,value:'Sugestao de matriz pelo turno',originalValue:bucket,reason:'Restauração geral das escolhas locais de matriz.',source:'Turno registrado no DED; sujeito a conferência da escola.',updatedAt:now});
  const calendarSource='Calendário Escolar SEE/MG 2026 incorporado no template.';
  for(const d of oldAdded)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'adicionado localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
  for(const d of oldRemoved)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
+ normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
  recalcSnapshotCalendar();if(saveConfig())toast('Referências originais restauradas; histórico de rastreabilidade preservado.');render();
 }
 
 document.addEventListener('submit',e=>{
+ if(e.target.id==='regular-matrix-audit-form'){e.preventDefault();applyRegularMatrixChange();return;}
  if(e.target.id!=='weekly-audit-form')return;
  e.preventDefault();applyWeeklyReferenceChange();
 });
@@ -2030,6 +2153,7 @@ document.addEventListener('click',e=>{
  else if(a==='confirm-calendar-audit')applyCalendarAdjustment();
  else if(a==='confirm-calendar-clear-audited'){document.getElementById('confirm-dialog')?.close();restoreCalendarModel();}
 });
+document.getElementById('confirm-dialog')?.addEventListener('close',()=>{if(pendingRegularMatrixAudit){pendingRegularMatrixAudit=null;if(state.page==='settings')render();}});
 window.DED_REFERENCE_AUDIT=Object.freeze({appendAuditEvent,referenceOriginCell,calendarAuditPanel,auditTrailPanel,requestWeeklyReferenceChange,restoreWeeklyReference,requestCalendarAdjustment,restoreCalendarModel,resetCalculationReferencesAudited});
 
 </script></body>
