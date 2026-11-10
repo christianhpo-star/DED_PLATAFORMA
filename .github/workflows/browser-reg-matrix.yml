@@ -7,6 +7,10 @@ on:
       - 'src/index.html'
       - 'tests/browser-reg-matrix.js'
       - 'tests/reference-auditability.js'
+      # A integração compartilha o HTML e deve passar pelos mesmos gates sintéticos.
+      - 'tests/*consolidated*.js'
+      - 'apps-script/**'
+      - 'tools/**'
       - '.github/workflows/browser-reg-matrix.yml'
   workflow_dispatch:
 
@@ -36,6 +40,8 @@ jobs:
           npm install --no-save --ignore-scripts playwright-core@1.56.1
       - name: Browser QA using synthetic classes only
         run: node tests/browser-reg-matrix.js
+      - name: Consolidated imports and Apps Script bridge using synthetic records
+        run: node tests/browser-consolidated.js
       - name: Keep failure screenshot only
         if: failure()
         uses: actions/upload-artifact@v4

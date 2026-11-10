@@ -52,3 +52,7 @@ Para as turmas técnicas iniciadas em 2025, não se aplica automaticamente a mat
 ## Acompanhamento
 
 A migração e as correções de 2026 estão registradas na Issue #1 deste repositório.
+
+## Consolidados de Turma e Apps Script
+
+A importação de notas e faltas está integrada à área Dados, com prévia, confirmação, versões e recuperação. O pacote institucional usa a mesma interface, sem derivar escrituração de aulas a partir de Consolidados. Consulte [instalação e contrato](docs/PLANO_TRANSICAO_GOOGLE_APPS_SCRIPT_CONSOLIDADOS.md). Nenhum deploy é executado pelo build.
