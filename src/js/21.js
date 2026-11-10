@@ -2,6 +2,7 @@
 // Rastreabilidade dos ajustes locais que alteram o cálculo do previsto.
 let pendingWeeklyAudit=null;
 let pendingCalendarAudit=null;
+let pendingRegularMatrixAudit=null;
 
 function auditWhen(ts){
  const n=Number(ts);if(!n)return 'data não registrada';
@@ -23,7 +24,7 @@ function appendAuditEvent(event){
 }
 function weeklyAuditMeta(key){return cfg.weeklyAudit?.[key]||null;}
 function auditTypeLabel(type){
- return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada'}[type]||type;
+ return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada',regular_matrix_override:'Matriz REG ajustada',regular_matrix_restore:'Matriz REG restaurada'}[type]||type;
 }
 function originalWeeklyLabel(value){return value===null||value===undefined?'sem referência documental':moneyless(value)+' A/S';}
 function referenceOriginCell(key,ref,value){
@@ -59,7 +60,7 @@ function calendarAuditPanel(added,removed){
 function auditTrailPanel(){
  const trail=(cfg.auditTrail||[]).slice().reverse();
  if(!trail.length)return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Nenhum ajuste auditável foi registrado.</p></div>'+badge('Sem alterações','good')+'</div></section>';
- return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
+ return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário, matrizes REG e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
   trail.slice(0,100).map(e=>'<tr><td>'+badge(auditTypeLabel(e.type),e.type.includes('restore')?'good':e.legacy?'warn':'info')+'</td><td>'+esc(e.target)+'</td><td>'+esc(e.reason)+'</td><td>'+esc(e.source)+(e.legacy?'<small>Registro legado; fonte original não comprovada.</small>':'')+'</td><td>'+esc(auditWhen(e.updatedAt))+'</td></tr>').join('')+
   '</tbody></table></div></details></section>';
 }
@@ -69,8 +70,109 @@ function rerenderSettingsPreservingReferenceScroll(){
  const wrap=document.querySelector('.reference-scroll');if(wrap)wrap.scrollTop=sc;
 }
 function closeAuditDialog(){
- pendingWeeklyAudit=null;pendingCalendarAudit=null;
+ pendingWeeklyAudit=null;pendingCalendarAudit=null;pendingRegularMatrixAudit=null;
  const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
+}
+// A matriz curricular e escolhida pela escola, com fonte e justificativa, antes de alterar calculos.
+function requestRegularMatrixChange(classId,bucket){
+ const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
+ if(!row||!profile?.bucket.startsWith('EM_REG_')||!new RegExp(`^EM_REG(?:_D)?_${profile.year}'use strict';
+// Rastreabilidade dos ajustes locais que alteram o cálculo do previsto.
+let pendingWeeklyAudit=null;
+let pendingCalendarAudit=null;
+let pendingRegularMatrixAudit=null;
+
+function auditWhen(ts){
+ const n=Number(ts);if(!n)return 'data não registrada';
+ const d=new Date(n);return Number.isNaN(d.getTime())?'data não registrada':d.toLocaleString('pt-BR');
+}
+function appendAuditEvent(event){
+ cfg.auditTrail=Array.isArray(cfg.auditTrail)?cfg.auditTrail:[];
+ cfg.auditTrail.push({
+  type:event.type,
+  target:auditText(event.target,240),
+  value:event.value??null,
+  originalValue:event.originalValue??null,
+  reason:auditText(event.reason),
+  source:auditText(event.source,500),
+  updatedAt:Number(event.updatedAt)||Date.now(),
+  legacy:!!event.legacy
+ });
+ if(cfg.auditTrail.length>1500)cfg.auditTrail=cfg.auditTrail.slice(-1500);
+}
+function weeklyAuditMeta(key){return cfg.weeklyAudit?.[key]||null;}
+function auditTypeLabel(type){
+ return {calendar_add:'Data adicionada',calendar_remove:'Data excluída',calendar_restore:'Calendário restaurado',weekly_override:'Carga semanal ajustada',weekly_restore:'Carga semanal restaurada',regular_matrix_override:'Matriz REG ajustada',regular_matrix_restore:'Matriz REG restaurada'}[type]||type;
+}
+function originalWeeklyLabel(value){return value===null||value===undefined?'sem referência documental':moneyless(value)+' A/S';}
+function referenceOriginCell(key,ref,value){
+ const custom=Object.hasOwn(cfg.weekly,key),meta=weeklyAuditMeta(key);
+ if(!custom)return badge(value===null?'Sem referência documental':'Referência documental',value===null?'warn':'good')+'<div class="source-text">'+esc(ref.source||'Fonte documental não informada.')+'</div>';
+ const original=meta?.originalWeekly??ref.weekly??null;
+ const legacy=!!meta?.legacy;
+ return badge('Ajuste local','info')+
+  '<div class="source-text"><strong>Valor usado:</strong> '+esc(value===null?'sem referência local':moneyless(value)+' A/S')+
+  ' · <strong>original:</strong> '+esc(originalWeeklyLabel(original))+'</div>'+
+  '<details class="reference-audit-details"><summary>Ver rastreabilidade</summary><div><p><strong>Fonte informada:</strong> '+esc(meta?.source||'não registrada')+'</p><p><strong>Justificativa:</strong> '+esc(meta?.reason||'não registrada')+'</p><p><strong>Alterado em:</strong> '+esc(auditWhen(meta?.updatedAt))+'</p>'+
+  (legacy?'<p>'+badge('Legado sem rastreabilidade completa','warn')+'</p>':'')+
+  '<p class="audit-warning">Este ajuste é local e não transforma a fonte informada em referência oficial.</p>'+
+  btn('Restaurar valor documental','restore-weekly-reference','data-reference-key="'+esc(key)+'"','btn-small btn-quiet')+'</div></details>';
+}
+function auditLatestForCalendar(type,date){
+ const targetType=type==='add'?'calendar_add':'calendar_remove';
+ return (cfg.auditTrail||[]).slice().reverse().find(e=>e.type===targetType&&e.target===date)||null;
+}
+function calendarAuditPanel(added,removed){
+ const active=[
+  ...removed.map(date=>({date,type:'remove',audit:auditLatestForCalendar('remove',date)})),
+  ...added.map(date=>({date,type:'add',audit:auditLatestForCalendar('add',date)}))
+ ].sort((a,b)=>a.date.localeCompare(b.date));
+ if(!active.length)return '<div class="audit-empty">'+icon('check')+'<span>Nenhum ajuste local ativo no calendário.</span></div>';
+ return '<div class="calendar-audit-list"><div class="audit-list-head"><strong>Ajustes locais ativos</strong><span>Alteram os dias usados no cálculo do previsto.</span></div>'+
+  active.map(item=>{
+   const a=item.audit;
+   return '<article class="calendar-audit-item"><div><strong>'+esc(formatDateBR(item.date))+'</strong>'+badge(item.type==='add'?'Adicionada localmente':'Excluída localmente',item.type==='add'?'info':'warn')+'</div>'+
+    '<p><strong>Motivo:</strong> '+esc(a?.reason||'não registrado')+'</p><p><strong>Fonte:</strong> '+esc(a?.source||'não registrada')+'</p><p><strong>Alteração:</strong> '+esc(auditWhen(a?.updatedAt))+(a?.legacy?' · legado':'')+'</p></article>';
+  }).join('')+'</div>';
+}
+function auditTrailPanel(){
+ const trail=(cfg.auditTrail||[]).slice().reverse();
+ if(!trail.length)return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Nenhum ajuste auditável foi registrado.</p></div>'+badge('Sem alterações','good')+'</div></section>';
+ return '<section class="card audit-history-card"><div class="card-head"><div><h2>Histórico de ajustes que alteram cálculo</h2><p class="sub">Registro local de calendário, matrizes REG e cargas semanais. Fontes informadas em ajustes locais não são promovidas a documentos oficiais.</p></div>'+badge(trail.length+' evento(s)','info')+'</div><details class="audit-history-details"><summary>Ver histórico</summary><div class="table-wrap"><table class="data-table"><thead><tr><th>Alteração</th><th>Alvo</th><th>Motivo</th><th>Fonte / referência</th><th>Quando</th></tr></thead><tbody>'+
+  trail.slice(0,100).map(e=>'<tr><td>'+badge(auditTypeLabel(e.type),e.type.includes('restore')?'good':e.legacy?'warn':'info')+'</td><td>'+esc(e.target)+'</td><td>'+esc(e.reason)+'</td><td>'+esc(e.source)+(e.legacy?'<small>Registro legado; fonte original não comprovada.</small>':'')+'</td><td>'+esc(auditWhen(e.updatedAt))+'</td></tr>').join('')+
+  '</tbody></table></div></details></section>';
+}
+function rerenderSettingsPreservingReferenceScroll(){
+ const y=window.scrollY,sc=document.querySelector('.reference-scroll')?.scrollTop||0;
+ render();window.scrollTo({top:y,behavior:'instant'});
+ const wrap=document.querySelector('.reference-scroll');if(wrap)wrap.scrollTop=sc;
+}
+function closeAuditDialog(){
+ pendingWeeklyAudit=null;pendingCalendarAudit=null;pendingRegularMatrixAudit=null;
+ const d=document.getElementById('confirm-dialog');if(d?.open)d.close();
+}
+).test(bucket)){toast('Matriz regular incompatível com a turma.');render();return;}
+ const current=regularMatrixBucket(row,profile);
+ if(bucket===current){render();return;}
+ pendingRegularMatrixAudit={classId,bucket,current};
+ const label=value=>value.startsWith('EM_REG_D_')?'Regular diurno':'Regular noturno';
+ const d=document.getElementById('confirm-dialog');
+ d.innerHTML='<form id="regular-matrix-audit-form"><div class="dialog-head"><div><div class="eyebrow muted">MATRIZ REGULAR POR TURMA</div><h2 id="confirm-title">'+esc(row.shortClass)+'</h2></div>'+btn(icon('close'),'cancel-audit-dialog','aria-label="Cancelar"','icon-btn')+'</div>'+
+  '<div class="dialog-body"><p><strong>Atual:</strong> '+esc(label(current))+' · <strong>Nova:</strong> '+esc(label(bucket))+'</p>'+
+  '<div class="notice warning tight">'+icon('info')+'<div class="text">A mudança afeta as aulas previstas. É uma escolha local, não uma nova referência oficial.</div></div>'+
+  '<div class="field"><label for="regular-matrix-reason">Justificativa</label><textarea id="regular-matrix-reason" maxlength="1000" required placeholder="Informe o motivo da escolha da matriz."></textarea></div>'+
+  '<div class="field"><label for="regular-matrix-source">Fonte / referência</label><input id="regular-matrix-source" maxlength="500" required placeholder="Ex.: matriz adotada pela escola, horário homologado."></div></div>'+
+  '<div class="dialog-foot"><span></span><div class="inline-actions">'+btn('Cancelar','cancel-audit-dialog')+'<button type="submit" class="btn btn-primary">Confirmar matriz</button></div></div></form>';
+ if(d.open)d.close();d.showModal();
+}
+function applyRegularMatrixChange(){
+ if(!pendingRegularMatrixAudit)return;
+ const reason=auditText(document.getElementById('regular-matrix-reason')?.value),source=auditText(document.getElementById('regular-matrix-source')?.value,500);
+ if(!reason||!source){toast('Informe justificativa e fonte.');return;}
+ const {classId,bucket}=pendingRegularMatrixAudit;
+ closeAuditDialog();
+ setRegularMatrixForClass(classId,bucket,{reason,source});
 }
 function requestWeeklyReferenceChange(key,value){
  const ref=DATA.refs[key];if(!ref)return;
@@ -151,12 +253,14 @@ function restoreCalendarModel(){
 }
 function resetCalculationReferencesAudited(){
  const oldWeekly={...(cfg.weekly||{})},oldWeeklyAudit={...(cfg.weeklyAudit||{})},oldAdded=[...(cfg.calendarAdded||[])],oldRemoved=[...(cfg.calendarRemoved||[])],trail=[...(cfg.auditTrail||[])],now=Date.now();
+ const oldRegular={...(cfg.regularMatrixByClass||{})};
  const preserved={school:cfg.school,gradeOverrides:cfg.gradeOverrides,teacherOverrides:cfg.teacherOverrides};
  cfg=defaultConfig();cfg.school=preserved.school;cfg.gradeOverrides=preserved.gradeOverrides;cfg.teacherOverrides=preserved.teacherOverrides;cfg.auditTrail=trail;
  for(const [key,value] of Object.entries(oldWeekly)){
   const original=DATA.refs[key]?.weekly??oldWeeklyAudit[key]?.originalWeekly??null;
   appendAuditEvent({type:'weekly_restore',target:key,value:original,originalValue:value,reason:'Restauração geral das referências incorporadas.',source:DATA.refs[key]?.source||'Referência documental incorporada no template.',updatedAt:now});
  }
+ for(const [classId,bucket] of Object.entries(oldRegular))appendAuditEvent({type:'regular_matrix_restore',target:classId,value:'Sugestao de matriz pelo turno',originalValue:bucket,reason:'Restauração geral das escolhas locais de matriz.',source:'Turno registrado no DED; sujeito a conferência da escola.',updatedAt:now});
  const calendarSource='Calendário Escolar SEE/MG 2026 incorporado no template.';
  for(const d of oldAdded)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'adicionado localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
  for(const d of oldRemoved)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
@@ -164,6 +268,7 @@ function resetCalculationReferencesAudited(){
 }
 
 document.addEventListener('submit',e=>{
+ if(e.target.id==='regular-matrix-audit-form'){e.preventDefault();applyRegularMatrixChange();return;}
  if(e.target.id!=='weekly-audit-form')return;
  e.preventDefault();applyWeeklyReferenceChange();
 });
