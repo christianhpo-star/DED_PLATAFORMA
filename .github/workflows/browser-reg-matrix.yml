@@ -33,7 +33,8 @@ jobs:
       - name: Build standalone HTML
         run: npm run build
       - name: Verify committed standalone HTML matches sources
-        run: git diff --exit-code -- dist/DED_em_Foco_MultiEscola_2026.html
+        # Os dois destinos e o contrato GAS devem ser reproduzíveis pelo mesmo build.
+        run: git diff --exit-code -- dist/DED_em_Foco_MultiEscola_2026.html apps-script/Index.html apps-script/ConsolidatedCore.gs
       - name: Prepare lightweight browser driver
         run: |
           command -v google-chrome || command -v google-chrome-stable || command -v chromium
