@@ -654,8 +654,24 @@ function reclassifyRowsForCurrentConfig(){
  for(const records of collections)normalizeEmbeddedRows(records);
  rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
 }
+// Preserva turmas REG visiveis apenas em snapshots antigos para revisar a matriz de seus diarios.
+function regularMatrixClassRows(){
+ const active=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])];
+ const activeIds=new Set(active.map(r=>String(r.cod_turma||'')));
+ const history=[...(dataStore.weeklySnapshots||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+ const byClass=new Map();
+ for(const rows of [...history.map(s=>s.rows||[]),active]){
+  for(const r of rows){
+   const profile=classifySchoolProfile(r.shortClass||extractShortClass(r.turma),r.turno);
+   if(!profile.isReg||!profile.bucket.startsWith('EM_REG_')||!profile.year||profile.isInt||!r.cod_turma)continue;
+   const id=String(r.cod_turma);
+   byClass.set(id,{...r,profile,historyOnly:!activeIds.has(id)});
+  }
+ }
+ return [...byClass.values()].sort((a,b)=>String(a.shortClass||'').localeCompare(String(b.shortClass||''),'pt-BR',{numeric:true}));
+}
 function setRegularMatrixForClass(classId,bucket,audit){
- const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const row=regularMatrixClassRows().find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
  if(!row||!profile?.isReg||!profile.bucket.startsWith('EM_REG_')||!new RegExp('^EM_REG(?:_D)?_'+profile.year+'$').test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return false;}
  const reason=auditText(audit?.reason),source=auditText(audit?.source,500);
@@ -1103,11 +1119,10 @@ function settingsPage(){
 }
 // Seletor rápido: deixa explícita a escolha entre as matrizes regulares, sem forçar turmas da tarde para o noturno.
 function regularMatrixAssignmentPanel(){
- const seen=new Map();for(const r of [...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])]){const profile=classifySchoolProfile(r.shortClass,r.turno);if(profile.isReg&&profile.bucket.startsWith('EM_REG_')&&profile.year&&!profile.isInt)seen.set(String(r.cod_turma),{...r,profile});}
- const classes=[...seen.values()].sort((a,b)=>a.shortClass.localeCompare(b.shortClass,'pt-BR'));
+ const classes=regularMatrixClassRows();
  if(!classes.length)return '';
- const body=classes.map(r=>{const year=r.profile.year,selected=cfg.regularMatrixByClass?.[String(r.cod_turma)]||r.bucket,diurno=`EM_REG_D_${year}`,noturno=`EM_REG_${year}`;return `<tr><td><strong>${esc(r.shortClass)}</strong><small class="record-info">Código ${esc(r.cod_turma)} · turno no DED: ${esc(r.turno||'não informado')}</small></td><td><select data-regular-matrix="${esc(r.cod_turma)}"><option value="${diurno}" ${selected===diurno?'selected':''}>Regular diurno · manhã/tarde</option><option value="${noturno}" ${selected===noturno?'selected':''}>Regular noturno · noite</option></select></td></tr>`;}).join('');
- return `<section class="card"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MATRIZ REGULAR POR TURMA</div><h2>Confirme a matriz de cada turma regular</h2><p class="sub">O turno do DED sugere a seleção inicial; manhã e tarde usam a opção diurna. Toda alteração exige confirmação, justificativa e fonte, registradas no histórico.</p></div>${badge(classes.length+' turma(s)','info')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma</th><th>Matriz aplicável</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
+ const body=classes.map(r=>{const year=r.profile.year,selected=cfg.regularMatrixByClass?.[String(r.cod_turma)]||r.bucket,diurno=`EM_REG_D_${year}`,noturno=`EM_REG_${year}`;return `<tr><td><strong>${esc(r.shortClass)}</strong><small class="record-info">Código ${esc(r.cod_turma)} · turno no DED: ${esc(r.turno||'não informado')}${r.historyOnly?' · somente no histórico semanal':''}</small></td><td><select data-regular-matrix="${esc(r.cod_turma)}"><option value="${diurno}" ${selected===diurno?'selected':''}>Regular diurno · manhã/tarde</option><option value="${noturno}" ${selected===noturno?'selected':''}>Regular noturno · noite</option></select></td></tr>`;}).join('');
+ return `<section class="card"><div class="card-head"><div><div class="eyebrow" style="color:var(--blue);margin-bottom:7px">MATRIZ REGULAR POR TURMA</div><h2>Confirme a matriz de cada turma regular</h2><p class="sub">O turno do DED sugere a seleção inicial; manhã e tarde usam a opção diurna. Turmas encontradas somente nas semanas anteriores também aparecem, para permitir a conferência de relatórios históricos. Toda alteração exige confirmação, justificativa e fonte, registradas no histórico.</p></div>${badge(classes.length+' turma(s)','info')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Turma</th><th>Matriz aplicável</th></tr></thead><tbody>${body}</tbody></table></div></section>`;
 }
 
 </script><script>
@@ -1942,7 +1957,7 @@ function closeAuditDialog(){
 // A matriz curricular e escolhida pela escola, com fonte e justificativa, antes de alterar calculos.
 // Toda troca manual de matriz REG altera o previsto e exige fonte e justificativa.
 function requestRegularMatrixChange(classId,bucket){
- const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
+ const row=regularMatrixClassRows().find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
  if(!row||!profile?.bucket.startsWith('EM_REG_')||!new RegExp('^EM_REG(?:_D)?_'+profile.year+'$').test(bucket)){toast('Matriz regular incompatível com a turma.');render();return;}
  const current=regularMatrixBucket(row,profile);
