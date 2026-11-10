@@ -15,6 +15,13 @@ function initialTrimester(){
 }
 const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
+// Reaplica as matrizes locais a todas as bases, inclusive o historico semanal.
+// Centraliza a reclassificacao apos importar parametros, restaurar backup ou editar matriz.
+function reclassifyRowsForCurrentConfig(){
+ const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
+ for(const records of collections)normalizeEmbeddedRows(records);
+ rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+}
 function setRegularMatrixForClass(classId,bucket,audit){
  const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
@@ -25,9 +32,7 @@ function setRegularMatrixForClass(classId,bucket,audit){
  if(original===bucket){render();return true;}
  cfg.regularMatrixByClass[classId]=bucket;
  appendAuditEvent({type:'regular_matrix_override',target:String(classId),value:bucket,originalValue:original,reason,source,updatedAt:Date.now()});
- const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
- for(const records of collections)normalizeEmbeddedRows(records);
- rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+ reclassifyRowsForCurrentConfig();
  if(saveConfig())toast('Matriz local atualizada e registrada no histórico, com fonte e justificativa.');
  render();return true;
 }
