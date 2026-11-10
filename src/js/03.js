@@ -4,6 +4,8 @@ try{const embedded=JSON.parse(document.getElementById('embedded-config').textCon
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
 // Reclassifica após ler as escolhas locais, mantendo o turno do DED como sugestão e não como imposição.
 normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
+// Historico semanal conserva a mesma matriz por turma apos recarregar o painel.
+for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
