@@ -634,6 +634,8 @@ try{const embedded=JSON.parse(document.getElementById('embedded-config').textCon
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
 // Reclassifica após ler as escolhas locais, mantendo o turno do DED como sugestão e não como imposição.
 normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
+// Historico semanal conserva a mesma matriz por turma apos recarregar o painel.
+for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
@@ -1322,7 +1324,7 @@ function nextImportPaint(){return new Promise(resolve=>requestAnimationFrame(()=
 function importRecoveryHint(message){
  const m=normalize(message||'');
  if(m.includes('cabecalho')||m.includes('relatorio de lancamentos'))return 'Próximo passo: selecione o Relatório de Lançamentos do Professor em formato XLSX, sem alterar os cabeçalhos.';
- if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira no arquivo se REG está no turno NOITE e INT no turno INTEGRAL.';
+ if(m.includes('modalidade')||m.includes('turno'))return 'Próximo passo: confira se a oferta integral está corretamente identificada; turmas REG podem ser diurnas ou noturnas e sua matriz deve ser conferida em Configurações.';
  if(m.includes('xlsx valido')||m.includes('estrutura zip')||m.includes('xml interno'))return 'Próximo passo: gere novamente o XLSX no sistema de origem e tente com o arquivo sem edição intermediária.';
  if(m.includes('guardar')||m.includes('salv')||m.includes('armazen'))return 'Próximo passo: libere espaço do navegador ou exporte uma cópia/backup antes de tentar novamente.';
  return 'Próximo passo: confira o arquivo e os dados indicados na mensagem; a base atual não foi alterada.';
