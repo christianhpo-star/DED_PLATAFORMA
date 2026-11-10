@@ -111,7 +111,7 @@ function hydrateDataStore(store,refs){
  dataStore=normalizeDataStore(store);
  if(refs&&typeof refs==='object')DATA.refs=safeClone(refs);
  DATA.raw_t1=dataStore.t1===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t1||[]):dataStore.t1;DATA.raw=dataStore.t2===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t2||[]):dataStore.t2;recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
- normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();
+ reclassifyRowsForCurrentConfig();
 }
 function commitImport(candidate=safeImportStage){
  if(!candidate)return;
