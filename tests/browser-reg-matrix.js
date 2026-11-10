@@ -81,7 +81,7 @@ async function main(){
   assert.equal(await page.evaluate(()=>window.DED.getConfig().regularMatrixByClass['1001']),undefined);
   await page.locator('select[data-regular-matrix="1001"]').selectOption('EM_REG_1');
   await page.keyboard.press('Escape');
-  await page.waitForFunction(()=>!document.getElementById('confirm-dialog').open);
+  await page.waitForFunction(()=>!document.getElementById('confirm-dialog').open && document.querySelector('select[data-regular-matrix="1001"]')?.value==='EM_REG_D_1');
   assert.equal(await page.locator('select[data-regular-matrix="1001"]').inputValue(),'EM_REG_D_1',
    'Tecla Escape deve restaurar seleção original.');
   console.log('PASS: não mutação antes da confirmação, cancelamento e tecla Escape.');
