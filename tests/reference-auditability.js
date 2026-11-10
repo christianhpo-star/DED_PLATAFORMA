@@ -69,11 +69,15 @@ assert(src14.includes('requestRegularMatrixChange(el.dataset.regularMatrix,el.va
 assert(src21.includes('regular-matrix-audit-form')&&src21.includes('regular-matrix-reason')&&src21.includes('regular-matrix-source'),'Dialogo de matriz deve exigir fonte e justificativa.');
 assert(src03.includes("type:'regular_matrix_override'"),'Mudanca de matriz deve gerar evento de auditoria.');
 assert(src21.includes("type:'regular_matrix_restore'"),'Restauracao geral de matriz deve ser auditada.');
-assert(src21.includes('for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows)'), 'Restauração de matrizes deve recalcular todas as semanas históricas.');
+assert(src21.includes('reclassifyRowsForCurrentConfig()'), 'Restauracao geral deve recalcular todas as matrizes via procedimento unico.');
 assert(src01.includes("profile.bucket.startsWith('EM_REG_')"),'Matriz REG de ensino medio nao pode ser aplicada a turmas do fundamental.');
 assert(!src07.includes('importsPageBase=importsPage'),'Tela de importacoes nao deve ser alterada por substituicao fragil de HTML.');
 assert(src07.includes('<h3>Regular · todas as matrizes</h3><div class="big number">${reg}</div>'),'Contagem REG deve refletir o numero real de turmas.');
 assert(src03.includes('for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows)'), 'Semanas anteriores precisam ser normalizadas após carregar matriz REG local.');
+assert(src03.includes('rebuildConsolidated();\nfunction localIsoDate'), 'Consolidado inicial deve ser recalculado apos ler parametros locais.');
+assert(src03.includes('function reclassifyRowsForCurrentConfig()'), 'Reclassificacao unificada deve existir.');
+assert(src15.includes('reclassifyRowsForCurrentConfig();'), 'Restaurar backup deve reclassificar todas as semanas.');
+assert(src13.includes('recalcSnapshotCalendar();reclassifyRowsForCurrentConfig();saveConfig();'), 'Importar parametros deve recalcular imediatamente matrizes e calendario.');
 assert(!src15.includes('se REG está no turno NOITE'), 'Erros de importação não devem exigir noite para todas as turmas REG.');
 assert(src03.includes('Ajuste local, não fonte oficial.'),'Cálculo deve distinguir origem local de referência documental.');
 assert(src11.includes('calendar-remove-reason')&&src11.includes('calendar-remove-source'),'Exclusão de data deve solicitar motivo e fonte.');
