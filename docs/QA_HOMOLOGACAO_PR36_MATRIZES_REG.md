@@ -16,6 +16,8 @@ Implementação: branch `fix/matriz-regular-por-turma`; PR https://github.com/ch
 
 Cenários automatizados: REG manhã → diurno; REG noite → noturno; Ensino Fundamental não recebe seletor EM; cancelar/ESC não persiste; confirmar exige fonte e justificativa; recarregar mantém a decisão e todas as semanas históricas; restaurar remove a seleção e reclassifica histórico; seletor acessível em 390px.
 
+Cenário adicional: uma turma REG encontrada **somente em semana histórica**, ausente dos arquivos correntes T1/T2 e da última semana, deve permanecer no seletor, com aviso de origem histórica. É possível confirmar uma matriz documentada para ela e manter essa decisão ao recarregar. O teste é exclusivamente sintético.
+
 **Este gate não comprova que as matrizes reais de cada escola foram homologadas.**
 
 ## Gate B — homologação operacional privada (pendente)
@@ -28,6 +30,7 @@ Cenários automatizados: REG manhã → diurno; REG noite → noturno; Ensino Fu
 6. Troque temporariamente a opção de uma turma de teste, **cancele** e verifique que a matriz e os resultados permanecem inalterados. Repita com **Esc**.
 7. Em uma turma cuja seleção alternativa seja documentalmente justificável, confirme o ajuste com motivo e fonte; confira o histórico, os indicadores e as referências utilizadas. Reabra o painel e verifique a persistência.
 8. Compare semanas anteriores do T3, uma impressão e uma exportação para verificar que não foi introduzida divergência de referência curricular entre períodos.
+   - Se houver turma encontrada somente em semana antiga, confira se ela aparece identificada no seletor e se a referência aplicável é a do período/coorte documentada; não atribua uma matriz por analogia.
 9. Em **cópia de teste**, execute a restauração geral das referências depois de exportar os parâmetros. **Atenção:** essa ação restaura também outros ajustes locais (como A/S e calendário); não a execute na produção sem revisão.
 10. Garanta que turmas do Ensino Fundamental, EMTI e componentes técnicos sem fonte documental não mudaram indevidamente.
 
@@ -43,6 +46,12 @@ Cenários automatizados: REG manhã → diurno; REG noite → noturno; Ensino Fu
 ## Privacidade e evidências
 
 O repositório é **público**. Não publicar HTML preenchido, XLSX, backups, screenshots com nomes, códigos internos de escola, diários ou estudantes. Registrar no PR apenas o resultado anonimizado (PASS/FAIL), versão/commit, data e descrição de eventuais discrepâncias, mantendo evidência nominal em armazenamento institucional autorizado.
+
+## Evidência técnica atual
+
+- Workflow de regressão e teste de Chromium com dados sintéticos: PASS (confirmar o commit e as execuções atualizadas na conversa do PR).
+- Teste adicional de turma presente apenas no histórico: PASS.
+- Nenhuma dessas verificações corresponde à conferência das matrizes homologadas de uma unidade real.
 
 ## Status
 
