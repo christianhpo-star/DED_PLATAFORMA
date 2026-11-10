@@ -636,6 +636,8 @@ try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(l
 normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
 // Historico semanal conserva a mesma matriz por turma apos recarregar o painel.
 for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
+// O consolidado precisa refletir a matriz importada antes do primeiro render.
+rebuildConsolidated();
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
@@ -645,6 +647,13 @@ function initialTrimester(){
 }
 const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
+// Reaplica as matrizes locais a todas as bases, inclusive o historico semanal.
+// Centraliza a reclassificacao apos importar parametros, restaurar backup ou editar matriz.
+function reclassifyRowsForCurrentConfig(){
+ const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
+ for(const records of collections)normalizeEmbeddedRows(records);
+ rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+}
 function setRegularMatrixForClass(classId,bucket,audit){
  const row=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])].find(r=>String(r.cod_turma)===String(classId));
  const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
@@ -655,9 +664,7 @@ function setRegularMatrixForClass(classId,bucket,audit){
  if(original===bucket){render();return true;}
  cfg.regularMatrixByClass[classId]=bucket;
  appendAuditEvent({type:'regular_matrix_override',target:String(classId),value:bucket,originalValue:original,reason,source,updatedAt:Date.now()});
- const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
- for(const records of collections)normalizeEmbeddedRows(records);
- rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+ reclassifyRowsForCurrentConfig();
  if(saveConfig())toast('Matriz local atualizada e registrada no histórico, com fonte e justificativa.');
  render();return true;
 }
@@ -1219,7 +1226,7 @@ document.addEventListener('click',e=>{
  else if(a==='reset-config')askConfirm('Restaurar refer\u00eancias originais?','Isso remove as previs\u00f5es espec\u00edficas e as cargas semanais ajustadas deste painel, e volta às referências curriculares incorporadas. Ajustes locais de calendário também serão removidos. Os registros originais do DED n\u00e3o ser\u00e3o alterados.','confirm-reset','Restaurar');
  else if(a==='confirm-reset'){document.getElementById('confirm-dialog').close();resetCalculationReferencesAudited();}
  else if(a==='cancel-confirm'){pendingImport=null;document.getElementById('confirm-dialog').close();}
- else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;saveConfig();document.getElementById('confirm-dialog').close();render();toast('Par\u00e2metros importados e indicadores recalculados.');}
+ else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;recalcSnapshotCalendar();reclassifyRowsForCurrentConfig();saveConfig();document.getElementById('confirm-dialog').close();updateSchoolUI();render();toast('Parâmetros importados. Matrizes REG, períodos e indicadores recalculados.');}
 });
 
 </script><script>
@@ -1408,7 +1415,7 @@ function hydrateDataStore(store,refs){
  dataStore=normalizeDataStore(store);
  if(refs&&typeof refs==='object')DATA.refs=safeClone(refs);
  DATA.raw_t1=dataStore.t1===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t1||[]):dataStore.t1;DATA.raw=dataStore.t2===null?safeClone(SAFE_IMPORT_EMBEDDED_BASE.t2||[]):dataStore.t2;recalcSnapshotCalendar();DATA.raw_t3=dataStore.weeklySnapshots.length?dataStore.weeklySnapshots.at(-1).rows:[];
- normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();
+ reclassifyRowsForCurrentConfig();
 }
 function commitImport(candidate=safeImportStage){
  if(!candidate)return;
@@ -2049,9 +2056,7 @@ function resetCalculationReferencesAudited(){
  const calendarSource='Calendário Escolar SEE/MG 2026 incorporado no template.';
  for(const d of oldAdded)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'adicionado localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
  for(const d of oldRemoved)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
- normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
- for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
- rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+ reclassifyRowsForCurrentConfig();
  recalcSnapshotCalendar();if(saveConfig())toast('Referências originais restauradas; histórico de rastreabilidade preservado.');render();
 }
 
