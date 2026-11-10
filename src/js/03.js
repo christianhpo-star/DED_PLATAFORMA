@@ -6,6 +6,8 @@ try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(l
 normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
 // Historico semanal conserva a mesma matriz por turma apos recarregar o painel.
 for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
+// O consolidado precisa refletir a matriz importada antes do primeiro render.
+rebuildConsolidated();
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
