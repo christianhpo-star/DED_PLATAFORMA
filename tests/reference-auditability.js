@@ -13,7 +13,6 @@ const src14=readLF(path.join(root,'src','js','14.js'));
 const src21=readLF(path.join(root,'src','js','21.js'));
 const src07=readLF(path.join(root,'src','js','07.js'));
 const src01=readLF(path.join(root,'src','js','01.js'));
-const src14=readLF(path.join(root,'src','js','14.js'));
 const html=readLF(path.join(root,'src','index.html'));
 
 const start=src02.indexOf('const defaultConfig = () =>');
@@ -65,6 +64,13 @@ assert.strictEqual(selected.regularMatrixByClass.TURMA1,'EM_REG_D_1','Seleção 
 assert(selected.auditTrail.some(e=>e.type==='regular_matrix_override'&&e.target==='TURMA1'&&e.legacy),'Escolha sem auditoria anterior deve ser sinalizada como legado.');
 const invalidMatrix={...audited,regularMatrixByClass:{TURMA1:'EM_INT_1'}};
 assert.throws(()=>ctx.validateConfig(invalidMatrix),/Matriz regular por turma inválida/,'Seleção de matriz de outra modalidade deve ser rejeitada.');
+assert(src14.includes('requestRegularMatrixChange(el.dataset.regularMatrix,el.value)'),'Mudanca de matriz deve solicitar confirmacao antes de alterar os dados.');
+assert(src21.includes('regular-matrix-audit-form')&&src21.includes('regular-matrix-reason')&&src21.includes('regular-matrix-source'),'Dialogo de matriz deve exigir fonte e justificativa.');
+assert(src03.includes("type:'regular_matrix_override'"),'Mudanca de matriz deve gerar evento de auditoria.');
+assert(src21.includes("type:'regular_matrix_restore'"),'Restauracao geral de matriz deve ser auditada.');
+assert(src01.includes("profile.bucket.startsWith('EM_REG_')"),'Matriz REG de ensino medio nao pode ser aplicada a turmas do fundamental.');
+assert(!src07.includes('importsPageBase=importsPage'),'Tela de importacoes nao deve ser alterada por substituicao fragil de HTML.');
+assert(src07.includes('<h3>Regular · todas as matrizes</h3><div class="big number">${reg}</div>'),'Contagem REG deve refletir o numero real de turmas.');
 assert(src03.includes('Ajuste local, não fonte oficial.'),'Cálculo deve distinguir origem local de referência documental.');
 assert(src11.includes('calendar-remove-reason')&&src11.includes('calendar-remove-source'),'Exclusão de data deve solicitar motivo e fonte.');
 assert(src11.includes('calendar-add-reason')&&src11.includes('calendar-add-source'),'Reposição deve solicitar motivo e fonte.');
