@@ -127,6 +127,55 @@ async function main(){
   assert.equal(reset.trail.length,1);
   console.log('PASS: restauração auditada, matriz original e histórico de semanas.');
 
+  // Importar parametros nao pode exigir F5 para recalcular matrizes e consolidados.
+  const importedConfig=await page.evaluate(()=>{
+   const cfg=window.DED.getConfig();
+   cfg.regularMatrixByClass['1001']='EM_REG_1';
+   cfg.auditTrail.push({type:'regular_matrix_override',target:'1001',value:'EM_REG_1',
+    originalValue:'EM_REG_D_1',reason:'QA sintético de importação',source:'Fonte sintética',updatedAt:Date.now()});
+   return JSON.stringify(cfg);
+  });
+  await page.locator('#import-settings').setInputFiles({
+   name:'qa-parametros.json',mimeType:'application/json',buffer:Buffer.from(importedConfig)
+  });
+  await page.locator('#confirm-dialog [data-action="apply-import"]').click();
+  const fromConfig=await page.evaluate(()=>({
+   selected:window.DED.getConfig().regularMatrixByClass['1001'],
+   current:window.DED.getData().raw.find(r=>String(r.cod_turma)==='1001')?.bucket,
+   consolidated:window.DED.getData().raw_consolidated.find(r=>String(r.cod_turma)==='1001')?.bucket,
+   historical:dataStore.weeklySnapshots.map(s=>s.rows.find(r=>String(r.cod_turma)==='1001')?.bucket)
+  }));
+  assert.equal(fromConfig.selected,'EM_REG_1');
+  assert.equal(fromConfig.current,'EM_REG_1');
+  assert.equal(fromConfig.consolidated,'EM_REG_1');
+  assert.deepEqual(fromConfig.historical,['EM_REG_1','EM_REG_1']);
+  await page.reload({waitUntil:'load'});
+  await page.waitForFunction(()=>Boolean(window.DED));
+  assert.equal(await page.evaluate(()=>window.DED.getData().raw_consolidated.find(r=>String(r.cod_turma)==='1001')?.bucket),
+   'EM_REG_1','Consolidado deve usar matriz persistida tambem apos recarregar.');
+  console.log('PASS: importação de parâmetros recalcula base atual, consolidado e semanas, inclusive após F5.');
+
+  // O backup pode conter a classificacao antiga: aplicar deve harmonizar todas as semanas com cfg local.
+  const backupText=await page.evaluate(()=>{
+   const payload=window.DED_BACKUP_RECOVERY.backupDataStorePayload();
+   for(const snap of payload.dataStore.weeklySnapshots){
+    const row=snap.rows.find(r=>String(r.cod_turma)==='1001');
+    if(row){row.bucket='EM_REG_D_1';row.offer='REGULAR_DIURNO';row.refKey='EM_REG_D_1|LINGUA PORTUGUESA';}
+   }
+   return JSON.stringify(payload);
+  });
+  await page.locator('#restore-data-backup-file').setInputFiles({
+   name:'qa-backup.json',mimeType:'application/json',buffer:Buffer.from(backupText)
+  });
+  await page.locator('#confirm-dialog [data-action="confirm-backup-restore"]').click();
+  const fromBackup=await page.evaluate(()=>({
+   cfg:window.DED.getConfig().regularMatrixByClass['1001'],
+   historical:dataStore.weeklySnapshots.map(s=>s.rows.find(r=>String(r.cod_turma)==='1001')?.bucket)
+  }));
+  assert.equal(fromBackup.cfg,'EM_REG_1');
+  assert.deepEqual(fromBackup.historical,['EM_REG_1','EM_REG_1'],
+   'Restauracao de backup deve reclassificar tambem snapshots antigos.');
+  console.log('PASS: restauração de backup mantém a matriz local e normaliza semanas históricas.');
   await page.setViewportSize({width:390,height:844});
   await page.locator('select[data-regular-matrix="1001"]').scrollIntoViewIfNeeded();
   assert(await page.locator('select[data-regular-matrix="1001"]').isVisible(),
