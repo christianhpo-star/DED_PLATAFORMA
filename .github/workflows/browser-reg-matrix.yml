@@ -7,6 +7,10 @@ on:
       - 'src/index.html'
       - 'tests/browser-reg-matrix.js'
       - 'tests/reference-auditability.js'
+      # A integração compartilha o HTML e deve passar pelos mesmos gates sintéticos.
+      - 'tests/*consolidated*.js'
+      - 'apps-script/**'
+      - 'tools/**'
       - '.github/workflows/browser-reg-matrix.yml'
   workflow_dispatch:
 
@@ -29,13 +33,16 @@ jobs:
       - name: Build standalone HTML
         run: npm run build
       - name: Verify committed standalone HTML matches sources
-        run: git diff --exit-code -- dist/DED_em_Foco_MultiEscola_2026.html
+        # Os dois destinos e o contrato GAS devem ser reproduzíveis pelo mesmo build.
+        run: git diff --exit-code -- dist/DED_em_Foco_MultiEscola_2026.html apps-script/Index.html apps-script/ConsolidatedCore.gs
       - name: Prepare lightweight browser driver
         run: |
           command -v google-chrome || command -v google-chrome-stable || command -v chromium
           npm install --no-save --ignore-scripts playwright-core@1.56.1
       - name: Browser QA using synthetic classes only
         run: node tests/browser-reg-matrix.js
+      - name: Consolidated imports and Apps Script bridge using synthetic records
+        run: node tests/browser-consolidated.js
       - name: Keep failure screenshot only
         if: failure()
         uses: actions/upload-artifact@v4
