@@ -264,6 +264,7 @@ function resetCalculationReferencesAudited(){
  const calendarSource='Calendário Escolar SEE/MG 2026 incorporado no template.';
  for(const d of oldAdded)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'adicionado localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
  for(const d of oldRemoved)appendAuditEvent({type:'calendar_restore',target:d,value:OFFICIAL_SCHOOL_DAYS.has(d)?'letivo no modelo':'não letivo no modelo',originalValue:'excluído localmente',reason:'Restauração geral das referências incorporadas.',source:calendarSource,updatedAt:now});
+ normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
  recalcSnapshotCalendar();if(saveConfig())toast('Referências originais restauradas; histórico de rastreabilidade preservado.');render();
 }
 
@@ -280,4 +281,5 @@ document.addEventListener('click',e=>{
  else if(a==='confirm-calendar-audit')applyCalendarAdjustment();
  else if(a==='confirm-calendar-clear-audited'){document.getElementById('confirm-dialog')?.close();restoreCalendarModel();}
 });
+document.getElementById('confirm-dialog')?.addEventListener('close',()=>{if(pendingRegularMatrixAudit){pendingRegularMatrixAudit=null;if(state.page==='settings')render();}});
 window.DED_REFERENCE_AUDIT=Object.freeze({appendAuditEvent,referenceOriginCell,calendarAuditPanel,auditTrailPanel,requestWeeklyReferenceChange,restoreWeeklyReference,requestCalendarAdjustment,restoreCalendarModel,resetCalculationReferencesAudited});
