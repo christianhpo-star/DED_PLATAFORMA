@@ -62,19 +62,27 @@ async function main(){
       state.weeklyPrintMode='';
       document.getElementById('view').innerHTML='<section style="height:148mm;border:1px solid #ddd;box-sizing:border-box"><h2>CONTEUDO QA IMPRESSAO</h2><p>Painel sintetico de teste de paginacao; nenhuma informacao escolar.</p></section>';
     });
+    // Descobrir o ultimo tamanho que cabe sem rodape; o conteudo puro
+    // nao pode produzir uma pagina extra em branco por ser alto demais.
+    await page.locator('.footer').evaluate(el=>el.style.display='none');
+    let chosen=null;
+    for(const mm of [110,120,128,132,136,139,142,145,148]){
+      await page.locator('#view section').evaluate((el,height)=>el.style.height=height+'mm',mm);
+      const bare=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
+      if(bare.length>1)break;
+      chosen=mm;
+    }
+    assert(chosen!==null,'Nenhum tamanho de pagina sem rodape coube no PDF');
+    await page.locator('.footer').evaluate(el=>el.style.display='');
     const common=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
     assert(common[0].includes('CONTEUDO QA IMPRESSAO'),'Conteudo de teste nao saiu na primeira pagina');
     assert(common.join(' ').includes('Desenvolvido por Christian Oliveira'),'Credito institucional nao deve desaparecer');
-    // Diagnostico: distinguir conteudo alto de expansao causada pelo rodape.
-    await page.locator('.footer').evaluate(el=>el.style.display='none');
-    const withoutFooter=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
-    await page.locator('.footer').evaluate(el=>el.style.display='');
-    console.log('QA PDF DIAGNOSTICO','com rodape',common.length,'sem rodape',withoutFooter.length);
     for(const [i,text] of common.entries()){
       const lines=text.split('\n').map(s=>s.trim()).filter(Boolean);
-      if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,lines}));
+      if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,heightMm:chosen,lines}));
       assert(lines.length>=5,'Pagina '+(i+1)+' com apenas rodape ou vazio ('+lines.length+' linha(s))');
     }
+    console.log('PASS: PDF normal calibrado com '+common.length+' pagina(s), altura '+chosen+' mm e sem folha de rodape isolada.');
     assert.deepEqual(errors,[]);
     console.log('PASS: PDF da visao normal com '+common.length+' pagina(s), credito preservado e sem folha de rodape isolada.');
   } finally {await browser?.close();server.close();}
