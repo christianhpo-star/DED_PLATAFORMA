@@ -65,6 +65,11 @@ async function main(){
     const common=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
     assert(common[0].includes('CONTEUDO QA IMPRESSAO'),'Conteudo de teste nao saiu na primeira pagina');
     assert(common.join(' ').includes('Desenvolvido por Christian Oliveira'),'Credito institucional nao deve desaparecer');
+    // Diagnostico: distinguir conteudo alto de expansao causada pelo rodape.
+    await page.locator('.footer').evaluate(el=>el.style.display='none');
+    const withoutFooter=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
+    await page.locator('.footer').evaluate(el=>el.style.display='');
+    console.log('QA PDF DIAGNOSTICO','com rodape',common.length,'sem rodape',withoutFooter.length);
     for(const [i,text] of common.entries()){
       const lines=text.split('\n').map(s=>s.trim()).filter(Boolean);
       if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,lines}));
