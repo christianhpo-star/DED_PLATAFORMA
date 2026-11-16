@@ -58,3 +58,11 @@ O repositório é **público**. Não publicar HTML preenchido, XLSX, backups, sc
 - Gate A: verificar o resultado atual da GitHub Action antes do merge.
 - Gate B: **pendente de execução em navegador com dados reais, em ambiente privado**.
 - Produção e `main`: não publicar/mesclar até concluir o Gate B.
+
+
+## QA complementar da impressao PDF — 16/11/2026
+
+- O teste sintetico `tests/browser-print-pagination.js` imprime com Chromium e verifica paginacao com `pdfinfo` e `pdftotext`, preservando a separacao entre professores e detectando folhas orfas.
+- A impressao comum coloca o credito de autoria no cabecalho e suprime o rodape da interface exclusivamente no modo de impressao, evitando uma ultima pagina com apenas rodape; o rodape permanece visivel no aplicativo.
+- Impedir quebra do conjunto de KPIs com `break-inside: avoid`; preservar `@page` A4 paisagem.
+- O gate automatizado devera passar no HEAD atualizado desta PR; isto nao fecha o Gate B de homologacao documental privada, nem autoriza merge/deploy.
