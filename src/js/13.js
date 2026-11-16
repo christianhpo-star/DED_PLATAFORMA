@@ -80,5 +80,5 @@ document.addEventListener('click',e=>{
  else if(a==='reset-config')askConfirm('Restaurar refer\u00eancias originais?','Isso remove as previs\u00f5es espec\u00edficas e as cargas semanais ajustadas deste painel, e volta às referências curriculares incorporadas. Ajustes locais de calendário também serão removidos. Os registros originais do DED n\u00e3o ser\u00e3o alterados.','confirm-reset','Restaurar');
  else if(a==='confirm-reset'){document.getElementById('confirm-dialog').close();resetCalculationReferencesAudited();}
  else if(a==='cancel-confirm'){pendingImport=null;document.getElementById('confirm-dialog').close();}
- else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;saveConfig();document.getElementById('confirm-dialog').close();render();toast('Par\u00e2metros importados e indicadores recalculados.');}
+ else if(a==='apply-import'){if(!pendingImport)return;cfg=pendingImport;pendingImport=null;recalcSnapshotCalendar();reclassifyRowsForCurrentConfig();saveConfig();document.getElementById('confirm-dialog').close();updateSchoolUI();render();toast('Parâmetros importados. Matrizes REG, períodos e indicadores recalculados.');}
 });

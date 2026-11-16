@@ -1,7 +1,13 @@
 'use strict';
-let loadWarning='';let cfg=defaultConfig();
+let loadWarning='';cfg=defaultConfig();
 try{const embedded=JSON.parse(document.getElementById('embedded-config').textContent);if(embedded&&embedded.version)cfg=validateConfig(embedded);}catch(e){loadWarning='A configura\u00e7\u00e3o incorporada n\u00e3o p\u00f4de ser lida. Foram usadas as refer\u00eancias originais.';}
 try{const local=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(local){const valid=validateConfig(JSON.parse(local));if(valid.updatedAt>cfg.updatedAt)cfg=valid;}}catch(e){loadWarning='O armazenamento local n\u00e3o est\u00e1 dispon\u00edvel ou cont\u00e9m dados inv\u00e1lidos. Use Salvar c\u00f3pia HTML para guardar ajustes.';}
+// Reclassifica após ler as escolhas locais, mantendo o turno do DED como sugestão e não como imposição.
+normalizeEmbeddedRows(DATA.raw_t1);normalizeEmbeddedRows(DATA.raw);normalizeEmbeddedRows(DATA.raw_t3);
+// Historico semanal conserva a mesma matriz por turma apos recarregar o painel.
+for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows);
+// O consolidado precisa refletir a matriz importada antes do primeiro render.
+rebuildConsolidated();
 function localIsoDate(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function initialTrimester(){
  if(dataStore.weeklySnapshots.length)return '3';
@@ -11,6 +17,43 @@ function initialTrimester(){
 }
 const state={page:'overview',trimester:initialTrimester(),stage:'',matrixGroup:'',classId:'',teacher:'',query:'',mode:'all',sort:'priority',selectedClass:'',comparisonA:'',comparisonB:'',referenceGroup:'all',gradeMode:'all',gradePage:0,printAllGrades:false,teacherGradeMode:'all',expanded:new Set(),weeklySelected:new Set(),weeklyPrintMode:'',weeklyPrintTeachers:new Set(),weeklySnapshotDate:'',weeklyManageDate:''};
 function saveConfig(){cfg.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(cfg));return true;}catch(e){toast('Ajuste aplicado nesta sess\u00e3o. Use Salvar c\u00f3pia HTML para preserv\u00e1-lo.');return false;}}
+// Reaplica as matrizes locais a todas as bases, inclusive o historico semanal.
+// Centraliza a reclassificacao apos importar parametros, restaurar backup ou editar matriz.
+function reclassifyRowsForCurrentConfig(){
+ const collections=[DATA.raw_t1,DATA.raw,DATA.raw_t3,dataStore.t1,dataStore.t2,...(dataStore.weeklySnapshots||[]).map(s=>s.rows)];
+ for(const records of collections)normalizeEmbeddedRows(records);
+ rebuildConsolidated();RAW=getActiveRaw();syncFilterOptions();
+}
+// Preserva turmas REG visiveis apenas em snapshots antigos para revisar a matriz de seus diarios.
+function regularMatrixClassRows(){
+ const active=[...(DATA.raw_t1||[]),...(DATA.raw||[]),...(DATA.raw_t3||[])];
+ const activeIds=new Set(active.map(r=>String(r.cod_turma||'')));
+ const history=[...(dataStore.weeklySnapshots||[])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+ const byClass=new Map();
+ for(const rows of [...history.map(s=>s.rows||[]),active]){
+  for(const r of rows){
+   const profile=classifySchoolProfile(r.shortClass||extractShortClass(r.turma),r.turno);
+   if(!profile.isReg||!profile.bucket.startsWith('EM_REG_')||!profile.year||profile.isInt||!r.cod_turma)continue;
+   const id=String(r.cod_turma);
+   byClass.set(id,{...r,profile,historyOnly:!activeIds.has(id)});
+  }
+ }
+ return [...byClass.values()].sort((a,b)=>String(a.shortClass||'').localeCompare(String(b.shortClass||''),'pt-BR',{numeric:true}));
+}
+function setRegularMatrixForClass(classId,bucket,audit){
+ const row=regularMatrixClassRows().find(r=>String(r.cod_turma)===String(classId));
+ const profile=row&&classifySchoolProfile(row.shortClass,row.turno);
+ if(!row||!profile?.isReg||!profile.bucket.startsWith('EM_REG_')||!new RegExp('^EM_REG(?:_D)?_'+profile.year+'$').test(bucket)){toast('Essa matriz não corresponde ao ano da turma regular.');return false;}
+ const reason=auditText(audit?.reason),source=auditText(audit?.source,500);
+ if(!reason||!source){toast('Informe justificativa e fonte para alterar a matriz curricular.');return false;}
+ const original=regularMatrixBucket(row,profile);
+ if(original===bucket){render();return true;}
+ cfg.regularMatrixByClass[classId]=bucket;
+ appendAuditEvent({type:'regular_matrix_override',target:String(classId),value:bucket,originalValue:original,reason,source,updatedAt:Date.now()});
+ reclassifyRowsForCurrentConfig();
+ if(saveConfig())toast('Matriz local atualizada e registrada no histórico, com fonte e justificativa.');
+ render();return true;
+}
 function schoolProfile(){return cfg.school||{name:'',city:'',sre:'',code:'',responsible:''};}
 function schoolName(){return schoolProfile().name||'Escola não configurada';}
 function schoolFileStem(){const s=(schoolProfile().code||schoolProfile().name||'escola').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,60);return s||'escola';}

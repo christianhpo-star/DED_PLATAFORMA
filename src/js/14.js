@@ -44,6 +44,7 @@ document.addEventListener('change',async e=>{
  else if(el.id==='compare-a'){state.comparisonA=el.value;render();}
  else if(el.id==='compare-b'){state.comparisonB=el.value;render();}
  else if(el.id==='reference-group'){state.referenceGroup=el.value;render();}
+ else if(el.dataset.regularMatrix){requestRegularMatrixChange(el.dataset.regularMatrix,el.value);}
  else if(el.dataset.teacherOverride){const key=el.dataset.teacherOverride,raw=el.value;if(raw)cfg.teacherOverrides[key]=raw;else delete cfg.teacherOverrides[key];if(saveConfig())toast(raw?'Professor responsável definido para o consolidado.':'Responsável voltou a ficar pendente.');render();}
  else if(el.dataset.reference){const key=el.dataset.reference;const raw=el.value.trim();const val=raw===''?null:Number(raw);if(!el.reportValidity()||(val!==null&&(!integer(val)||val<0||val>45))){toast('Carga semanal inválida. Informe um inteiro entre 0 e 45, ou deixe vazio.');el.value=weeklyFor({refKey:key})??'';return;}requestWeeklyReferenceChange(key,val);}
  else if(el.id==='replace-t1-file'||el.id==='replace-t2-file'){const file=el.files?.[0];if(!file)return;try{await queueSafeImport(file,el.id==='replace-t1-file'?'1':'2');}finally{el.value='';}}

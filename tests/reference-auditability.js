@@ -11,6 +11,9 @@ const src11=readLF(path.join(root,'src','js','11.js'));
 const src13=readLF(path.join(root,'src','js','13.js'));
 const src14=readLF(path.join(root,'src','js','14.js'));
 const src21=readLF(path.join(root,'src','js','21.js'));
+const src07=readLF(path.join(root,'src','js','07.js'));
+const src01=readLF(path.join(root,'src','js','01.js'));
+const src15=readLF(path.join(root,'src','js','15.js'));
 const html=readLF(path.join(root,'src','index.html'));
 
 const start=src02.indexOf('const defaultConfig = () =>');
@@ -38,7 +41,7 @@ const audited={
  ],updatedAt:11
 };
 const valid=ctx.validateConfig(JSON.parse(JSON.stringify(audited)));
-assert.strictEqual(valid.version,7,'Configuração auditável deve permanecer no schema v7.');
+assert.strictEqual(valid.version,8,'Configuração auditável deve migrar para o schema v8.');
 assert.strictEqual(valid.weeklyAudit.REF.originalWeekly,4,'Valor documental original deve permanecer recuperável.');
 assert.strictEqual(valid.weeklyAudit.REF.source,'Horário homologado de 15/09/2026','Fonte local informada deve ser preservada.');
 assert(valid.auditTrail.some(e=>e.type==='calendar_add'&&e.target==='2026-12-12'),'Ajuste ativo de calendário deve ter trilha correspondente.');
@@ -51,12 +54,35 @@ assert.throws(()=>ctx.validateConfig(noCalendarAudit),/Data adicionada sem rastr
 
 const legacy={version:6,datasetId:'ded-plataforma-template-2026',days:68,school:{},weekly:{REF:6},expected:{},teacherOverrides:{},gradeOverrides:{},calendarAdded:[],calendarRemoved:['2026-12-08'],updatedAt:99};
 const migrated=ctx.validateConfig(legacy);
-assert.strictEqual(migrated.version,7,'Configuração legada deve migrar para v7.');
+assert.strictEqual(migrated.version,8,'Configuração legada deve migrar para v8.');
 assert.strictEqual(migrated.weeklyAudit.REF.originalWeekly,4,'Migração deve capturar o valor documental original.');
 assert.strictEqual(migrated.weeklyAudit.REF.legacy,true,'Ajuste antigo deve ser marcado como legado.');
 assert(migrated.weeklyAudit.REF.source.includes('fonte não registrada'),'Migração não pode inventar fonte oficial.');
 assert(migrated.auditTrail.some(e=>e.type==='calendar_remove'&&e.target==='2026-12-08'&&e.legacy),'Calendário legado deve ganhar trilha explicitamente incompleta.');
 
+const selected=ctx.validateConfig({...audited,regularMatrixByClass:{TURMA1:'EM_REG_D_1'}});
+assert.strictEqual(selected.regularMatrixByClass.TURMA1,'EM_REG_D_1','Seleção de matriz REG deve persistir no schema v8.');
+assert(selected.auditTrail.some(e=>e.type==='regular_matrix_override'&&e.target==='TURMA1'&&e.legacy),'Escolha sem auditoria anterior deve ser sinalizada como legado.');
+const invalidMatrix={...audited,regularMatrixByClass:{TURMA1:'EM_INT_1'}};
+assert.throws(()=>ctx.validateConfig(invalidMatrix),/Matriz regular por turma inválida/,'Seleção de matriz de outra modalidade deve ser rejeitada.');
+assert(src14.includes('requestRegularMatrixChange(el.dataset.regularMatrix,el.value)'),'Mudanca de matriz deve solicitar confirmacao antes de alterar os dados.');
+assert(src21.includes('regular-matrix-audit-form')&&src21.includes('regular-matrix-reason')&&src21.includes('regular-matrix-source'),'Dialogo de matriz deve exigir fonte e justificativa.');
+assert(src03.includes("type:'regular_matrix_override'"),'Mudanca de matriz deve gerar evento de auditoria.');
+assert(src21.includes("type:'regular_matrix_restore'"),'Restauracao geral de matriz deve ser auditada.');
+assert(src21.includes('reclassifyRowsForCurrentConfig()'), 'Restauracao geral deve recalcular todas as matrizes via procedimento unico.');
+assert(src01.includes("profile.bucket.startsWith('EM_REG_')"),'Matriz REG de ensino medio nao pode ser aplicada a turmas do fundamental.');
+assert(!src07.includes('importsPageBase=importsPage'),'Tela de importacoes nao deve ser alterada por substituicao fragil de HTML.');
+assert(src07.includes('<h3>Regular · todas as matrizes</h3><div class="big number">${reg}</div>'),'Contagem REG deve refletir o numero real de turmas.');
+assert(src03.includes('for(const snapshot of dataStore.weeklySnapshots||[])normalizeEmbeddedRows(snapshot.rows)'), 'Semanas anteriores precisam ser normalizadas após carregar matriz REG local.');
+assert(src03.includes('rebuildConsolidated();\nfunction localIsoDate'), 'Consolidado inicial deve ser recalculado apos ler parametros locais.');
+assert(src03.includes('function reclassifyRowsForCurrentConfig()'), 'Reclassificacao unificada deve existir.');
+assert(src03.includes('function regularMatrixClassRows()'), 'Turmas presentes apenas no histórico devem ser identificadas.');
+assert(src03.includes('dataStore.weeklySnapshots||[]'), 'Consulta de matrizes deve incluir o histórico semanal completo.');
+assert(src11.includes('const classes=regularMatrixClassRows();'), 'Lista de matrizes deve exibir turmas do histórico.');
+assert(src21.includes('regularMatrixClassRows().find('), 'Confirmação de matriz deve aceitar turmas históricas.');
+assert(src15.includes('reclassifyRowsForCurrentConfig();'), 'Restaurar backup deve reclassificar todas as semanas.');
+assert(src13.includes('recalcSnapshotCalendar();reclassifyRowsForCurrentConfig();saveConfig();'), 'Importar parametros deve recalcular imediatamente matrizes e calendario.');
+assert(!src15.includes('se REG está no turno NOITE'), 'Erros de importação não devem exigir noite para todas as turmas REG.');
 assert(src03.includes('Ajuste local, não fonte oficial.'),'Cálculo deve distinguir origem local de referência documental.');
 assert(src11.includes('calendar-remove-reason')&&src11.includes('calendar-remove-source'),'Exclusão de data deve solicitar motivo e fonte.');
 assert(src11.includes('calendar-add-reason')&&src11.includes('calendar-add-source'),'Reposição deve solicitar motivo e fonte.');
@@ -73,6 +99,6 @@ assert(src21.includes("type:'calendar_restore'"),'Restauração de calendário d
 assert(src21.includes('Este ajuste é local e não transforma a fonte informada em referência oficial.'),'Interface deve impedir confusão entre fonte local e oficial.');
 assert(!src21.includes('DATA.refs[key].source='),'Ajuste local não pode sobrescrever a fonte documental incorporada.');
 assert(src13.includes('Parâmetros e rastreabilidade exportados.'),'Exportação de parâmetros deve declarar inclusão da rastreabilidade.');
-assert(html.includes('"version":7')&&html.includes('"weeklyAudit":{}')&&html.includes('"auditTrail":[]'),'Template público deve nascer no schema auditável v7.');
+assert(html.includes('"version":8')&&html.includes('"weeklyAudit":{}')&&html.includes('"auditTrail":[]'),'Template público deve nascer no schema auditável v8.');
 
 console.log('OK: rastreabilidade de calendário, A/S, migração legada e restauração documental verificadas.');

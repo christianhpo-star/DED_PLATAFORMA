@@ -37,7 +37,7 @@ const ctx = {
 };
 
 vm.createContext(ctx);
-vm.runInContext(src01 + '; this.classifySchoolProfile = classifySchoolProfile; this.OFFICIAL_WEEKLY = OFFICIAL_WEEKLY;', ctx);
+vm.runInContext(src01 + '; this.classifySchoolProfile = classifySchoolProfile; this.OFFICIAL_WEEKLY = OFFICIAL_WEEKLY; this.regularMatrixBucket=regularMatrixBucket; this.setMatrixOverridesForTests=values=>{cfg={regularMatrixByClass:values};};', ctx);
 vm.runInContext(src02 + '; this.stage = stage; this.refLabels = refLabels; this.offerFilterLabel = offerFilterLabel; this.offerFilterOptions = offerFilterOptions; this.rowOfferTags = rowOfferTags;', ctx);
 
 console.log('1. Testando classificação de turmas e perfis...');
@@ -95,6 +95,16 @@ assert.strictEqual(emtiTec.year, '1', '1º ano EMTI deve ser extraído.');
 assert.strictEqual(emtiTec.bucket, 'EM_INT_1', '1º EMTI deve mapear para EM_INT_1.');
 assert.strictEqual(emtiTec.offer, 'EMTI_TECNICO', 'Oferta deve ser EMTI_TECNICO.');
 assert.strictEqual(emtiTec.courseKey, 'SISTEMAS_ENERGIA_RENOVAVEL', 'Curso técnico deve ser identificado.');
+
+console.log('1b. Testando selecao local de matriz por turma REG...');
+ctx.setMatrixOverridesForTests({T1:'EM_REG_1',T2:'EM_REG_D_2',EF:'EM_REG_1'});
+const byId=(cod_turma,profile)=>ctx.regularMatrixBucket({cod_turma},profile);
+assert.strictEqual(byId('T1',em1Diurno),'EM_REG_1','Escolha local deve poder corrigir diurno para noturno no mesmo ano.');
+assert.strictEqual(byId('T2',em2Vesp),'EM_REG_D_2','Escolha local deve manter matriz diurna do 2o ano.');
+assert.strictEqual(byId('EF',ef1),'EF_AI','Matriz do Ensino Medio nunca pode substituir classificacao do Fundamental.');
+assert.strictEqual(byId('NAO_CONFIGURADA',em1Diurno),'EM_REG_D_1','Sem selecao local, prevalece classificacao sugerida pelo turno.');
+assert.strictEqual(byId('T2',em1Diurno),'EM_REG_D_1','Matriz de outra serie deve ser ignorada.');
+ctx.setMatrixOverridesForTests({});
 
 console.log('2. Testando soma de cargas semanais das matrizes oficiais SEE/MG 2026...');
 
