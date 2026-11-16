@@ -7,6 +7,8 @@ on:
       - 'src/index.html'
       - 'tests/browser-reg-matrix.js'
       - 'tests/reference-auditability.js'
+      - 'tests/browser-print-pagination.js'
+      - 'src/css/**'
       - '.github/workflows/browser-reg-matrix.yml'
   workflow_dispatch:
 
@@ -36,6 +38,14 @@ jobs:
           npm install --no-save --ignore-scripts playwright-core@1.56.1
       - name: Browser QA using synthetic classes only
         run: node tests/browser-reg-matrix.js
+      - name: Verify print/PDF utilities
+        run: |
+          if ! command -v pdfinfo >/dev/null 2>&1 || ! command -v pdftotext >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq poppler-utils
+          fi
+      - name: PDF pagination QA with synthetic content
+        run: node tests/browser-print-pagination.js
       - name: Keep failure screenshot only
         if: failure()
         uses: actions/upload-artifact@v4
