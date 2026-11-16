@@ -29,16 +29,19 @@ function syncFilterOptions(){
 }
 
 // Leitor XLSX local: extrai somente as células necessárias do relatório oficial, sem enviar arquivos para a internet.
-async function unzipXlsx(file){
+// Limite opcional protege a nova fonte também contra tamanho ZIP declarado incorreto.
+async function unzipXlsx(file,maxExpanded=Infinity){
  const buffer=await file.arrayBuffer(),view=new DataView(buffer);let eocd=-1;
  for(let i=buffer.byteLength-22;i>=Math.max(0,buffer.byteLength-65557);i--){if(view.getUint32(i,true)===0x06054b50){eocd=i;break;}}
  if(eocd<0)throw new Error('O arquivo não parece ser um XLSX válido.');
  const count=view.getUint16(eocd+10,true),central=view.getUint32(eocd+16,true),decoder=new TextDecoder(),files={};let p=central;
+ let expanded=0;
  for(let i=0;i<count;i++){
   if(view.getUint32(p,true)!==0x02014b50)throw new Error('Estrutura ZIP inválida.');
   const method=view.getUint16(p+10,true),size=view.getUint32(p+20,true),nameLen=view.getUint16(p+28,true),extraLen=view.getUint16(p+30,true),commentLen=view.getUint16(p+32,true),local=view.getUint32(p+42,true),name=decoder.decode(new Uint8Array(buffer,p+46,nameLen));
   const localName=view.getUint16(local+26,true),localExtra=view.getUint16(local+28,true),start=local+30+localName+localExtra,compressed=new Uint8Array(buffer,start,size);let raw;
-  if(method===0)raw=compressed;else if(method===8){const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'));raw=new Uint8Array(await new Response(stream).arrayBuffer());}else throw new Error('Compactação XLSX não suportada.');
+  if(method===0)raw=compressed;else if(method===8){const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'));if(Number.isFinite(maxExpanded)){const reader=stream.getReader(),chunks=[];let length=0;while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(expanded+length>maxExpanded){await reader.cancel();throw new Error('XLSX descompactado excede o limite seguro.');}chunks.push(value);}raw=new Uint8Array(length);let offset=0;for(const chunk of chunks){raw.set(chunk,offset);offset+=chunk.length;}}else raw=new Uint8Array(await new Response(stream).arrayBuffer());}else throw new Error('Compactação XLSX não suportada.');
+  expanded+=raw.length;if(expanded>maxExpanded)throw new Error('XLSX descompactado excede o limite seguro.');
   files[name]=raw;p+=46+nameLen+extraLen+commentLen;
  }
  return files;

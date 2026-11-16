@@ -2,7 +2,8 @@
   "name": "ded-plataforma",
   "private": true,
   "scripts": {
-    "build": "node tools/build.js",
-    "test": "node tests/regression-curriculum.js && node tests/backup-recovery.js && node tests/navigation-ia.js && node tests/attention-center.js && node tests/data-freshness.js && node tests/weekly-history.js && node tests/weekly-unassessed.js && node tests/responsive-filters.js && node tests/reference-auditability.js && node tests/multi-school-support.js"
+    "build": "node tools/build-apps-script.js",
+    "test": "node tests/regression-curriculum.js && node tests/backup-recovery.js && node tests/navigation-ia.js && node tests/attention-center.js && node tests/data-freshness.js && node tests/weekly-history.js && node tests/weekly-unassessed.js && node tests/responsive-filters.js && node tests/reference-auditability.js && node tests/multi-school-support.js && node tests/class-consolidated.js && node tests/apps-script-consolidated.js",
+    "test:consolidated-browser": "node tests/browser-consolidated.js"
   }
 }

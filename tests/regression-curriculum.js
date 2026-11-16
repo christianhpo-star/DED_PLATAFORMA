@@ -5,8 +5,9 @@ const assert = require('assert');
 const root = path.resolve(__dirname, '..');
 const jsDir = path.join(root, 'src', 'js');
 const indexPath = path.join(root, 'src', 'index.html');
+// Consolidados acrescentam contrato e interface sem remover os módulos anteriores.
 const files = fs.readdirSync(jsDir).filter(f => /^\d{2}\.js$/.test(f)).sort();
-assert.deepStrictEqual(files, Array.from({length:21},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..21.');
+assert.deepStrictEqual(files, Array.from({length:23},(_,i)=>`${String(i+1).padStart(2,'0')}.js`), 'A sequência modular JS deve permanecer 01..23.');
 const js = files.map(f => fs.readFileSync(path.join(jsDir,f),'utf8')).join('\n');
 new Function(js); // syntax-only compile; does not execute DOM code
 
@@ -33,7 +34,7 @@ assert(js.includes("source:isBilingualComponent(compNorm)?MATRIX_SOURCE_BILINGUA
 
 const html = fs.readFileSync(indexPath,'utf8');
 const scripts = [...html.matchAll(/<script src="js\/(\d{2})\.js"><\/script>/g)].map(m=>m[1]);
-assert.deepStrictEqual(scripts, Array.from({length:21},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 21 módulos JS em ordem.');
+assert.deepStrictEqual(scripts, Array.from({length:23},(_,i)=>String(i+1).padStart(2,'0')), 'index.html deve carregar os 23 módulos JS em ordem.');
 const styles = [...html.matchAll(/<link href="css\/(\d{2})\.css" rel="stylesheet"\/>/g)].map(m=>m[1]);
 assert.deepStrictEqual(styles, ['01','02','03','04','05','06','07','08','09','10','11'], 'index.html deve carregar os onze módulos CSS.');
 assert(html.includes('id="matrix-filter"'), 'Filtro Oferta / matriz deve permanecer disponível no template.');
