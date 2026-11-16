@@ -9,6 +9,8 @@ on:
       - 'tests/reference-auditability.js'
       # A integração compartilha o HTML e deve passar pelos mesmos gates sintéticos.
       - 'tests/*consolidated*.js'
+      - 'tests/browser-print-pagination.js'
+      - 'src/css/**'
       - 'apps-script/**'
       - 'tools/**'
       - '.github/workflows/browser-reg-matrix.yml'
@@ -43,6 +45,14 @@ jobs:
         run: node tests/browser-reg-matrix.js
       - name: Consolidated imports and Apps Script bridge using synthetic records
         run: node tests/browser-consolidated.js
+      - name: Verify print/PDF utilities
+        run: |
+          if ! command -v pdfinfo >/dev/null 2>&1 || ! command -v pdftotext >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq poppler-utils
+          fi
+      - name: PDF pagination QA with synthetic content
+        run: node tests/browser-print-pagination.js
       - name: Keep failure screenshot only
         if: failure()
         uses: actions/upload-artifact@v4
