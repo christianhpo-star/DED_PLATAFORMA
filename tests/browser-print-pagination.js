@@ -67,6 +67,7 @@ async function main(){
     assert(common.join(' ').includes('Desenvolvido por Christian Oliveira'),'Credito institucional nao deve desaparecer');
     for(const [i,text] of common.entries()){
       const lines=text.split('\n').map(s=>s.trim()).filter(Boolean);
+      if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,lines}));
       assert(lines.length>=5,'Pagina '+(i+1)+' com apenas rodape ou vazio ('+lines.length+' linha(s))');
     }
     assert.deepEqual(errors,[]);
