@@ -46,8 +46,10 @@ async function main(){
     await page.emulateMedia({media:'print'});
     const weekly=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
     assert(weekly.length>=2,'Duas folhas docentes devem ser impressas separadamente');
-    const a=weekly.findIndex(x=>x.includes('DOCENTE QA ALFA')),
-          b=weekly.findIndex(x=>x.includes('DOCENTE QA BETA'));
+    // title() normaliza capitalizacao dos nomes exibidos no relatorio.
+    const names=weekly.map(x=>x.toLocaleLowerCase('pt-BR').replace(/\s+/g,' '));
+    const a=names.findIndex(x=>x.includes('docente qa alfa')),
+          b=names.findIndex(x=>x.includes('docente qa beta'));
     assert(a>=0&&b>a,'Cada professor deve iniciar em folha posterior, sem sobreposicao');
     for(const [i,text] of weekly.entries()){
       assert(text.split('\n').filter(x=>x.trim()).length>=5,'Pagina semanal quase vazia: '+(i+1));
