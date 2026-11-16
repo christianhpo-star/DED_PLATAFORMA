@@ -24,6 +24,22 @@ const root=path.resolve(__dirname,'..');
   const wait=page.waitForEvent('download');await page.locator('[data-action="consolidated-backup"]').click();const download=await wait;const p=await download.path();const bytes=fs.readFileSync(p);
   await page.locator('#consolidated-backup-file').setInputFiles({name:'qa-restore.json',mimeType:'application/json',buffer:bytes});await page.locator('[data-action="consolidated-restore-local"]').waitFor();await page.locator('[data-action="consolidated-restore-local"]').click();await page.waitForFunction(()=>DED_CONSOLIDATED_UI.getStore().revision===4);assert.equal(await count(),4);
   await page.locator('#class-consolidated-files').setInputFiles({name:'corrupt.xlsx',mimeType:'application/octet-stream',buffer:Buffer.from('not xlsx')});await page.waitForFunction(()=>document.querySelector('[role="status"]').textContent.includes('corrompido'));assert.equal(await count(),4);
+  // 250 estudantes, apenas 120 com nota ausente: nunca exibir pagina vazia.
+  const paginated=matrix(1,'105');
+  paginated.splice(6,2,...Array.from({length:250},(_,i)=>['ESTUDANTE QA PAGINACAO '+String(i+1).padStart(3,'0'),i<120?'':'18','0','12','0']));
+  await select({name:'qa-paginacao.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:xlsx(paginated)});
+  await page.locator('[data-action="consolidated-confirm"]').click();
+  await page.waitForFunction(()=>Object.keys(DED_CONSOLIDATED_UI.getStore().active).length===5);
+  await page.locator('#consolidated-select').selectOption('999999|2026|105|1');
+  assert((await page.locator('#view').innerText()).includes('ESTUDANTE QA PAGINACAO 001'));
+  await page.locator('[data-action="consolidated-next"]').click();
+  let pageText=await page.locator('#view').innerText();
+  assert(pageText.includes('ESTUDANTE QA PAGINACAO 120'));
+  assert(!pageText.includes('ESTUDANTE QA PAGINACAO 001'));
+  await page.locator('[data-action="consolidated-next"]').click();
+  pageText=await page.locator('#view').innerText();
+  assert(pageText.includes('ESTUDANTE QA PAGINACAO 001'));
+  assert(!pageText.includes('ESTUDANTE QA PAGINACAO 120'));
   await page.setViewportSize({width:390,height:844});assert(await page.locator('#class-consolidated-files').isVisible());assert.equal(await page.locator('#filter-panel').isVisible(),false);
   assert.deepEqual(errors,[]);console.log('PASS: navegador, cancelamento, uma/múltiplas turmas T1/T2/T3, repetição, substituição, persistência, backup/restauração, arquivo corrompido, 390px e separação de aulas.');
   // Pacote institucional: não aceita ajuste local de carga ou matriz.
