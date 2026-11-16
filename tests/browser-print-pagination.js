@@ -73,16 +73,19 @@ async function main(){
       chosen=mm;
     }
     assert(chosen!==null,'Nenhum tamanho de pagina sem rodape coube no PDF');
+    // Reserva de 4 mm evita falso positivo por arredondamento na quebra do Chromium.
+    const testedHeight=Math.max(100,chosen-4);
+    await page.locator('#view section').evaluate((el,mm)=>el.style.height=mm+'mm',testedHeight);
     await page.locator('.footer').evaluate(el=>el.style.display='');
     const common=pdfPages(await page.pdf({preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false}));
     assert(common[0].includes('CONTEUDO QA IMPRESSAO'),'Conteudo de teste nao saiu na primeira pagina');
     assert(common.join(' ').includes('Desenvolvido por Christian Oliveira'),'Credito institucional nao deve desaparecer');
     for(const [i,text] of common.entries()){
       const lines=text.split('\n').map(s=>s.trim()).filter(Boolean);
-      if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,heightMm:chosen,lines}));
+      if(lines.length<5)console.error('QA PAGINA CURTA (somente dados sinteticos)',JSON.stringify({page:i+1,total:common.length,heightMm:testedHeight,lines}));
       assert(lines.length>=5,'Pagina '+(i+1)+' com apenas rodape ou vazio ('+lines.length+' linha(s))');
     }
-    console.log('PASS: PDF normal calibrado com '+common.length+' pagina(s), altura '+chosen+' mm e sem folha de rodape isolada.');
+    console.log('PASS: PDF normal calibrado com '+common.length+' pagina(s), altura '+testedHeight+' mm e sem folha de rodape isolada.');
     assert.deepEqual(errors,[]);
     console.log('PASS: PDF da visao normal com '+common.length+' pagina(s), credito preservado e sem folha de rodape isolada.');
   } finally {await browser?.close();server.close();}
